@@ -60,6 +60,12 @@ class Render:
         self.branching_factor_scale.set(3)  # Default value
         self.branching_factor_scale.pack(fill='x', pady=5)
 
+        # Connectedness Scale 
+        ttk.Label(self.sidebar, text="Connectedness (%):").pack(anchor='w')
+        self.connectedness_scale = ttk.Scale(self.sidebar, from_=1, to=9.9, orient='horizontal')  # Scale ranges from 1 to 9 for 10% to 90%
+        self.connectedness_scale.set(7)  # Default value is 7, representing 70%
+        self.connectedness_scale.pack(fill='x', pady=5)
+
         # Maze Generation Algorithm Dropdown
         ttk.Label(self.sidebar, text="Generation Algorithm:").pack(anchor='w', pady=(10, 0))
         self.gen_algorithm_var = tk.StringVar()
@@ -113,6 +119,7 @@ class Render:
             dead_ends = int(self.dead_ends_scale.get())
             branching_factor = int(self.branching_factor_scale.get())
             generation_algorithm = self.gen_algorithm_var.get()
+            connectedness = int(self.connectedness_scale.get()) * 10  # Convert the scale to percentage (e.g., 7 => 70%)
             seed_input = self.seed_entry.get()
             if seed_input == "":
                 seed = None
@@ -158,6 +165,7 @@ class Render:
                 'cols': cols,
                 'dead_ends': dead_ends,
                 'branching_factor': branching_factor,
+                'connectedness': connectedness,
                 'generation_algorithm': generation_algorithm,
                 'seed': seed,
                 'wall_density': wall_density

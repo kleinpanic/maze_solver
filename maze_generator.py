@@ -2,7 +2,7 @@ import numpy as np
 import random
 from collections import deque
 
-def generate_maze(rows, cols, generation_algorithm="Recursive Backtracker", seed=None, wall_density=0.3, dead_ends=10, branching_factor=3):
+def generate_maze(rows, cols, generation_algorithm="Recursive Backtracker", seed=None, wall_density=0.3, dead_ends=10, branching_factor=3, connectedness=70):
     if seed is not None:
         random.seed(seed)
         np.random.seed(seed)
@@ -18,9 +18,9 @@ def generate_maze(rows, cols, generation_algorithm="Recursive Backtracker", seed
     # Use a loop to regenerate maze if unsolvable
     while not is_solved:
         if generation_algorithm == "Recursive Backtracker":
-            maze = recursive_backtracker_maze(rows, cols, adjusted_wall_density, dead_ends, branching_factor)
+            maze = recursive_backtracker_maze(rows, cols, adjusted_wall_density, dead_ends, branching_factor, connectedness)
         elif generation_algorithm == "Prim's":
-            maze = prim_maze(rows, cols, adjusted_wall_density, dead_ends, branching_factor)
+            maze = prim_maze(rows, cols, adjusted_wall_density, dead_ends, branching_factor, connectedness)
         else:
             raise ValueError(f"Unknown generation algorithm: {generation_algorithm}")
 
@@ -29,7 +29,7 @@ def generate_maze(rows, cols, generation_algorithm="Recursive Backtracker", seed
 
     return maze, seed  # Return the generated maze along with the seed
 
-def recursive_backtracker_maze(rows, cols, wall_density, dead_ends, branching_factor):
+def recursive_backtracker_maze(rows, cols, wall_density, dead_ends, branching_factor, connectedness):
     maze = np.ones((rows, cols), dtype=int)
 
     # Initialize the stack with the starting point
@@ -58,6 +58,19 @@ def recursive_backtracker_maze(rows, cols, wall_density, dead_ends, branching_fa
         if not carved:
             stack.pop()  # Backtrack if no carving was possible
 
+    # Ensure connectedness to the main path
+    required_connections = int(len(main_path) * (connectedness / 100))
+    for _ in range(required_connections):
+        r, c = random.choice(main_path)
+        directions = [(2, 0), (-2, 0), (0, 2), (0, -2)]
+        random.shuffle(directions)
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if 0 < nr < rows - 1 and 0 < nc < cols - 1 and maze[nr][nc] == 1:
+                maze[nr - dr // 2][nc - dc // 2] = 0  # Remove wall between
+                maze[nr][nc] = 0  # Create a connection to the main path
+                break
+
     # Create branches based on branching_factor
     for _ in range(branching_factor):
         if len(main_path) > 2:
@@ -85,7 +98,7 @@ def recursive_backtracker_maze(rows, cols, wall_density, dead_ends, branching_fa
 
     return maze
 
-def prim_maze(rows, cols, wall_density, dead_ends, branching_factor):
+def prim_maze(rows, cols, wall_density, dead_ends, branching_factor, connectedness):
     maze = np.ones((rows, cols), dtype=int)
     start_r, start_c = 1, 1
     maze[start_r][start_c] = 0
@@ -113,16 +126,30 @@ def prim_maze(rows, cols, wall_density, dead_ends, branching_factor):
                 main_path.append((opposite_r, opposite_c))
                 add_walls(opposite_r, opposite_c)
 
+    # Ensure connectedness to the main path
+    required_connections = int(len(main_path) * (connectedness / 100))
+    for _ in range(required_connections):
+        r, c = random.choice(main_path)
+        directions = [(2, 0), (-2, 0), (0, 2), (0, -2)]
+        random.shuffle(directions)
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if 0 < nr < rows - 1 and 0 < nc < cols - 1 and maze[nr][nc] == 1:
+                maze[nr - dr // 2][nc - dc // 2] = 0  # Remove wall between
+                maze[nr][nc] = 0  # Create a connection to the main path
+                break
+
     # Create branches based on branching_factor
     for _ in range(branching_factor):
         if len(main_path) > 2:
             r, c = random.choice(main_path)
-            directions = [(-1,0), (1,0), (0,-1), (0,1)]
+            directions = [(2, 0), (-2, 0), (0, 2), (0, -2)]
             random.shuffle(directions)
             for dr, dc in directions:
                 nr, nc = r + dr, c + dc
                 if 0 < nr < rows-1 and 0 < nc < cols-1 and maze[nr][nc] == 1:
-                    maze[nr][nc] = 0  # Create a false branch
+                    maze[nr - dr//2][nc - dc//2] = 0  # Remove wall between
+                    maze[nr][nc] = 0  # Create a branch
                     break
 
     # Create dead ends based on dead_ends
@@ -130,6 +157,12 @@ def prim_maze(rows, cols, wall_density, dead_ends, branching_factor):
         r, c = random.randint(1, rows-2), random.randint(1, cols-2)
         if maze[r][c] == 0:
             maze[r][c] = 1  # Add a dead end
+
+    # Add random walls based on wall_density
+    for r in range(1, rows-1):
+        for c in range(1, cols-1):
+            if maze[r][c] == 0 and random.random() < wall_density * 0.1:
+                maze[r][c] = 1  # Add wall 
 
     return maze
 
