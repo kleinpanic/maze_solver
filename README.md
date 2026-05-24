@@ -2,11 +2,11 @@
 
 ## Overview
 
-This Python Maze Solver is a graphical maze generation and solving application built using `Tkinter` for the user interface. The program generates mazes with adjustable parameters such as maze size, branching factor, number of dead ends, wall density, and overall connectedness. Once generated, the user can solve the maze using various pathfinding algorithms including Breadth-First Search (BFS), Depth-First Search (DFS), and A* Search. 
+This Python Maze Solver is a graphical maze generation and solving application built with `Tkinter`. The program generates mazes with adjustable parameters such as maze size, branching factor, number of dead ends, wall density, and connectedness. Once generated, the user can solve the maze using pathfinding algorithms including Breadth-First Search (BFS), Depth-First Search (DFS), A* Search, and Dijkstra's algorithm.
 
 ## Features
 
-- **Maze Generation Algorithms**: Generate mazes using **Recursive Backtracker** and **Prim's Algorithm**.
+- **Maze Generation Algorithms**: Generate mazes using **Recursive Backtracker**, **Prim's Algorithm**, **Kruskal**, **Wilson**, **Aldous-Broder**, **Hunt and Kill**, **Binary Tree**, and **Sidewinder**.
 - **Adjustable Maze Parameters**:
   - **Rows and Columns**: Control the dimensions of the maze (supports strict 1:1 and 1:2 ratios).
   - **Dead Ends**: Adjust the number of dead ends in the maze.
@@ -18,7 +18,8 @@ This Python Maze Solver is a graphical maze generation and solving application b
 - **Pathfinding Algorithms**:
   - **Breadth-First Search (BFS)**: Explores the maze layer by layer, guaranteeing the shortest path.
   - **Depth-First Search (DFS)**: Explores deep paths before backtracking, resulting in longer paths.
-  - **A* Search**: A heuristic-based algorithm that combines features of both BFS and DFS.
+  - **A* Search**: A heuristic shortest-path algorithm using Manhattan distance for 4-neighbor grids.
+  - **Dijkstra's Algorithm**: Computes shortest paths for graphs with non-negative edge weights.
 - **Real-Time Visualization**: Watch the maze being solved step-by-step, with visual indications of visited cells, the frontier, and the final path.
 - **User-Controlled Timer**: The timer starts when the user initiates the solving process and stops once the solution is found.
 - **Interactive Stop**: The solving process can be stopped at any time by pressing the stop button.
@@ -27,7 +28,16 @@ This Python Maze Solver is a graphical maze generation and solving application b
 
 ### Getting Started
 
-The program requires no external dependencies (except tkinter), so just clone the repository and run the `main.py` file:
+Create a virtual environment, install the package in editable mode, then run the GUI:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+python3 main.py
+```
+
+For a quick run on a machine that already has NumPy and Tkinter available:
 
 ```bash
 python3 main.py
@@ -48,7 +58,8 @@ Once the maze is generated, select a pathfinding algorithm from the dropdown:
 
 - **BFS**: Finds the shortest path by exploring all neighboring nodes evenly.
 - **DFS**: Searches deep into the maze, often producing longer paths due to its depth-first nature.
-- **A* Search**: Combines the exploration of BFS with heuristic guidance for faster results.
+- **A* Search**: Uses `f(n) = g(n) + h(n)` with Manhattan distance to prioritize promising paths while preserving optimality on this grid model.
+- **Dijkstra's Algorithm**: Expands the cheapest known frontier first and supports non-negative weighted paths.
 
 Click **Start** to begin solving the maze. The maze will be solved step by step, with different colors representing the visited cells, the frontier, and the final path.
 
@@ -71,24 +82,41 @@ Key features:
 - **Maze Generation and Solving**: When you click **Generate Maze**, it spawns a new thread to avoid freezing the UI. Clicking **Start** initiates the solving process in a step-by-step manner.
 - **Stop Functionality**: The `stop_requested` flag is used to gracefully interrupt the solving process.
 
-### `maze_generator.py`
+### `src/maze_solver/generation.py`
 
-Handles maze generation using the **Recursive Backtracker** and **Prim's Algorithm**. Key parameters such as dead ends, branching factor, wall density, and connectedness are handled here to create custom mazes.
+Handles maze generation using a registry of supported algorithms. Key parameters such as dead ends, branching factor, wall density, and connectedness are handled here to create custom mazes.
 
 Key features:
 - **Recursive Backtracker**: This is a depth-first maze generation algorithm that carves out a perfect maze (i.e., no loops) by backtracking whenever it hits a dead end.
 - **Prim's Algorithm**: An algorithm that grows a maze from a starting point by adding walls around it, randomly selecting walls, and carving new paths.
+- **Kruskal**: Uses a disjoint-set structure to join shuffled cell walls into a spanning tree.
+- **Wilson**: Uses loop-erased random walks to generate uniform spanning trees.
+- **Aldous-Broder**: Uses random walks to generate uniform spanning trees.
+- **Hunt and Kill**: Walks until stuck, then scans for another frontier cell.
+- **Binary Tree** and **Sidewinder**: Fast biased generators useful for visual comparison.
 - **Solvability Check**: Every generated maze is checked for solvability using BFS. If the maze is unsolvable, it is regenerated.
 
-### `pathfinding_algorithms.py`
+### `src/maze_solver/algorithms.py`
 
-Implements three pathfinding algorithms for solving mazes:
+Implements pathfinding algorithms for solving mazes:
 
 - **BFS Generator**: Implements a breadth-first search that explores the maze layer by layer, ensuring the shortest path is found.
 - **DFS Generator**: A depth-first search that dives deep into one path before backtracking, often producing longer paths.
 - **A* Generator**: Uses the Manhattan distance heuristic to prioritize paths that are closer to the goal.
+- **Dijkstra Generator**: Uses a priority queue to find shortest paths with non-negative edge weights.
 
-Each algorithm is implemented as a generator, which yields intermediate steps for real-time visualization.
+Each algorithm is implemented as a generator, which yields intermediate steps for real-time visualization. Root-level modules are kept as compatibility wrappers for the existing GUI.
+
+## Development
+
+Run the current verification suite:
+
+```bash
+source .venv/bin/activate
+pytest
+ruff check .
+ruff format --check .
+```
 
 ### `render.py`
 
@@ -119,4 +147,3 @@ DFS works by exploring one path as deeply as possible before backtracking to exp
 ### A* Search
 
 A* is a heuristic search algorithm that combines the features of BFS and DFS. It uses a heuristic (in this case, the Manhattan distance) to prioritize paths that are closer to the goal, making it faster and more efficient for finding optimal paths.
-

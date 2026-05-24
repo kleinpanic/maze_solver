@@ -1,7 +1,4 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+"""Maze generation and pathfinding toolkit."""
 
 from maze_solver.algorithms import (
     ALGORITHM_REGISTRY,
@@ -9,16 +6,15 @@ from maze_solver.algorithms import (
     bfs_generator,
     dfs_generator,
     dijkstra_generator,
-    heuristic,
 )
-from maze_solver.grid import adjacent_cells as get_adjacent_cells
+from maze_solver.generation import GENERATION_REGISTRY, generate_maze
 
 __all__ = [
     "ALGORITHM_REGISTRY",
+    "GENERATION_REGISTRY",
     "a_star_generator",
     "bfs_generator",
     "dfs_generator",
     "dijkstra_generator",
-    "get_adjacent_cells",
-    "heuristic",
+    "generate_maze",
 ]
