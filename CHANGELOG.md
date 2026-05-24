@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.10
+
+- Updated the GitHub Pages browser title and top navigation branding to match
+  the Maze Solver Museum presentation.
+
 ## 0.2.9
 
 - Removed the misleading wall-density control from WebUI, GUI, and TUI defaults; maze texture is now shaped internally by the generator profile.
