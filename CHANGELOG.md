@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.14
+
+- Added a WebUI algorithm anatomy panel with frontier policy, cost model,
+  guarantee, trace origin, and native/projected execution badges.
+- Fixed the WebUI trace legend so start, goal, visited, frontier, goal-wave,
+  and path colors match the canvas rendering.
+- Made projected WebUI solver math copy explicit about projection status instead
+  of presenting complexity fields as direct equations.
+- Cancelled pending Tkinter solver callbacks before rerunning a new GUI
+  algorithm, preventing old solver events from interleaving with new runs.
+
 ## 0.2.13
 
 - Added searchable, filterable desktop GUI algorithm browsing across the full

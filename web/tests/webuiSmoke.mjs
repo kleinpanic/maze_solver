@@ -64,6 +64,7 @@ try {
   assert.match(await page.locator("#algorithmCount").innerText(), new RegExp(`^${solverButtons}/${solverButtons}\\b`));
   await page.fill("#algorithmSearch", "dijkstra");
   assert.equal(await page.locator('[data-algorithm="Dijkstra"]').count(), 1);
+  assert.match(await page.locator('[data-algorithm="Dijkstra"] em').innerText(), /native|projected/i);
   assert.ok(Number((await page.locator("#algorithmCount").innerText()).split("/")[0]) < solverButtons);
   await page.click("#clearAlgorithmFilters");
   await page.selectOption("#familyFilter", { label: "Weighted shortest path" });
@@ -76,7 +77,20 @@ try {
   assert.equal(await page.locator("#speed").inputValue(), "44");
   assert.equal(await page.locator("#randomizeOnAlgorithm").isChecked(), false);
   assert.equal(await page.locator("#inspectorMathSummary").count(), 1);
+  assert.equal(await page.locator(".algorithm-anatomy").count(), 1);
+  assert.equal(await page.locator("#algorithmExecutionBadge").innerText(), "native");
+  assert.match(await page.locator("#anatomyFrontier").innerText(), /queue|frontier/i);
   assert.equal(await page.locator(".trace-legend").count(), 1);
+  assert.equal(await page.locator(".trace-legend span").count(), 6);
+  const legendColors = await page.$$eval(".trace-legend i", (items) => items.map((item) => getComputedStyle(item).backgroundColor));
+  assert.deepEqual(legendColors, [
+    "rgb(69, 224, 142)",
+    "rgb(239, 84, 84)",
+    "rgb(121, 214, 242)",
+    "rgb(240, 184, 77)",
+    "rgb(169, 139, 255)",
+    "rgb(216, 79, 214)",
+  ]);
   const clippedButtons = await page.$$eval("[data-algorithm]", (buttons) =>
     buttons.filter((button) => button.scrollHeight > button.clientHeight + 1 || button.scrollWidth > button.clientWidth + 1).length,
   );

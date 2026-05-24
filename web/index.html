@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver Museum</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.13" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.14" />
   </head>
   <body>
     <div class="app-shell">
@@ -88,7 +88,10 @@
           </label>
           <div class="trace-legend" aria-label="Trace color legend">
             <span><i class="legend-start"></i>start</span>
-            <span><i class="legend-goal"></i>goal-origin</span>
+            <span><i class="legend-goal"></i>goal</span>
+            <span><i class="legend-visited"></i>visited</span>
+            <span><i class="legend-frontier"></i>frontier</span>
+            <span><i class="legend-reverse"></i>goal-wave</span>
             <span><i class="legend-path"></i>path</span>
           </div>
 
@@ -141,6 +144,34 @@
           <section class="catalog-summary">
             <h3>Known 2D Coverage</h3>
             <p id="roadmapSummary">Loading algorithm catalog...</p>
+          </section>
+
+          <section class="algorithm-anatomy" aria-label="Selected algorithm anatomy">
+            <div class="panel-heading">
+              <h3>Algorithm Anatomy</h3>
+              <div class="badge-stack">
+                <span id="algorithmFamilyBadge">Unweighted graph search</span>
+                <span id="algorithmExecutionBadge">native</span>
+              </div>
+            </div>
+            <div class="anatomy-grid">
+              <article>
+                <span>Frontier</span>
+                <strong id="anatomyFrontier">FIFO queue by distance layer</strong>
+              </article>
+              <article>
+                <span>Cost Model</span>
+                <strong id="anatomyCost">Unit edge cost</strong>
+              </article>
+              <article>
+                <span>Guarantee</span>
+                <strong id="anatomyGuarantee">Complete and shortest on unweighted grids</strong>
+              </article>
+              <article>
+                <span>Trace</span>
+                <strong id="anatomyTrace">Start-origin expansion</strong>
+              </article>
+            </div>
           </section>
 
           <section class="math-card" aria-label="Current algorithm math summary">
@@ -236,6 +267,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.13"></script>
+    <script type="module" src="./main.js?v=0.2.14"></script>
   </body>
 </html>

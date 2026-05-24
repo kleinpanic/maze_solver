@@ -461,6 +461,35 @@ const solverAliases = {
   "Integer Linear Programming": "BFS",
 };
 
+const nativeSolvers = new Set([
+  "BFS",
+  "Lee",
+  "DFS",
+  "Flood Fill",
+  "A*",
+  "IDA*",
+  "Hadlock",
+  "Dijkstra",
+  "UCS",
+  "SPFA",
+  "Bidirectional BFS",
+  "Greedy Best-First",
+  "Left-Hand Rule",
+  "Right-Hand Rule",
+  "Tremaux",
+  "Pledge",
+  "IDDFS",
+  "Bellman-Ford",
+  "Dead-End Filling",
+  "Random Mouse",
+  "Weighted A*",
+  "Beam Search",
+  "Hill Climbing",
+  "Corridor Graph Reduction",
+  "Sampling Planner",
+  "Optimization Search",
+]);
+
 const generatorDetails = {
   "Recursive Backtracker": {
     name: "Recursive Backtracker",
@@ -637,6 +666,12 @@ const controls = {
   deadEnds: document.querySelector("#deadEnds"),
   junctions: document.querySelector("#junctions"),
   corridorBias: document.querySelector("#corridorBias"),
+  algorithmFamilyBadge: document.querySelector("#algorithmFamilyBadge"),
+  algorithmExecutionBadge: document.querySelector("#algorithmExecutionBadge"),
+  anatomyFrontier: document.querySelector("#anatomyFrontier"),
+  anatomyCost: document.querySelector("#anatomyCost"),
+  anatomyGuarantee: document.querySelector("#anatomyGuarantee"),
+  anatomyTrace: document.querySelector("#anatomyTrace"),
   generatorName: document.querySelector("#generatorName"),
   generatorSummary: document.querySelector("#generatorSummary"),
   generatorFamily: document.querySelector("#generatorFamily"),
@@ -1828,6 +1863,41 @@ function formatBound(value) {
   return String(value);
 }
 
+function frontierPolicy(info, breakdown) {
+  const family = info.family;
+  if (family.includes("Weighted") || info.time.includes("log V")) return "Priority queue by cheapest score";
+  if (family.includes("Bidirectional") || family.includes("Meet")) return "Two frontiers racing from both ends";
+  if (family.includes("Wall")) return "Local wall-following state";
+  if (family.includes("Random")) return "Random legal-neighbor choice";
+  if (family.includes("Depth") || info.name.includes("Depth")) return "Stack or repeated depth-limited stack";
+  if (family.includes("Dynamic") || family.includes("Value") || family.includes("Policy")) return "Repeated relaxation over the grid";
+  if (family.includes("Sampling")) return "Sampled milestones and graph edges";
+  if (family.includes("Constraint") || family.includes("Optimization")) return "Encoded candidate path constraints";
+  if (breakdown.procedure.toLowerCase().includes("queue")) return "Queue-driven wavefront";
+  return "Frontier chosen by the solver family";
+}
+
+function traceOrigin(name, info) {
+  if (name === "Flood Fill" || name === "Reverse BFS") return "Goal-origin distance wave";
+  if (name.includes("Bidirectional") || info.family.includes("Bidirectional") || info.family.includes("Meet")) return "Start and goal waves";
+  if (name.includes("D*") || name.includes("Value") || name.includes("Policy") || name.includes("Potential")) {
+    return "Goal-informed field projection";
+  }
+  return "Start-origin expansion";
+}
+
+function guaranteeText(info) {
+  const complete = info.complete === "Yes" ? "complete" : info.complete === "No" ? "not complete" : `${info.complete.toLowerCase()} complete`;
+  const optimal = info.optimal === "Yes" ? "shortest-path optimal" : info.optimal === "No" ? "not shortest-path optimal" : "projected optimality";
+  return `${complete}; ${optimal}`;
+}
+
+function executionMode(name) {
+  if (nativeSolvers.has(name)) return { label: "native", detail: "Native browser rendition" };
+  if (solverAliases[name]) return { label: "projected", detail: `Projected through ${solverAliases[name]}` };
+  return { label: "catalog", detail: "Catalog metadata" };
+}
+
 function updateMetrics() {
   const info = algorithms[state.algorithm];
   const breakdown = breakdowns[state.algorithm] ?? {
@@ -1865,6 +1935,14 @@ function updateMetrics() {
   controls.deadEnds.textContent = mazeStats.deadEnds;
   controls.junctions.textContent = mazeStats.junctions;
   controls.corridorBias.textContent = mazeStats.corridorBias;
+  const mode = executionMode(state.algorithm);
+  controls.algorithmFamilyBadge.textContent = info.family;
+  controls.algorithmExecutionBadge.textContent = mode.label;
+  controls.algorithmExecutionBadge.className = `mode-${mode.label}`;
+  controls.anatomyFrontier.textContent = frontierPolicy(info, breakdown);
+  controls.anatomyCost.textContent = breakdown.cost;
+  controls.anatomyGuarantee.textContent = guaranteeText(info);
+  controls.anatomyTrace.textContent = `${traceOrigin(state.algorithm, info)}; ${mode.detail}`;
   const generator = generatorDetails[controls.generator.value];
   controls.generatorName.textContent = generator.name;
   controls.generatorSummary.textContent = generator.summary;
@@ -1965,7 +2043,7 @@ function renderAlgorithmButtons() {
     .map(
       ([name, info]) =>
         `<button data-algorithm="${escapeHtml(name)}" aria-pressed="${name === state.algorithm}" title="${escapeHtml(`${info.name} - ${info.family}`)}" class="${name === state.algorithm ? "active" : ""}">` +
-        `${escapeHtml(shortAlgorithmLabel(name))}<small>${escapeHtml(shortFamilyLabel(info.family))}</small></button>`,
+        `${escapeHtml(shortAlgorithmLabel(name))}<small>${escapeHtml(shortFamilyLabel(info.family))}</small><em>${escapeHtml(executionMode(name).label)}</em></button>`,
     )
     .join("");
   controls.algorithmCount.textContent = `${filtered.length}/${entries.length} shown`;
@@ -2007,11 +2085,11 @@ async function renderRoadmap() {
     breakdowns[key] = {
       summary: `${entry.name} as a ${entry.family.toLowerCase()} view over the current maze graph.`,
       graph: "Finite 4-neighbor grid graph",
-      cost: entry.space,
-      formula: entry.time,
-      invariant: `Projected ${entry.family.toLowerCase()} rendition over the finite 4-neighbor maze graph.`,
-      procedure: entry.notes,
-      watch: `Compare visited cells, frontier pressure, path length, and calculated bound against direct grid-search baselines.`,
+      cost: "Projection over unit-cost maze edges",
+      formula: `Reference bound: ${entry.time}`,
+      invariant: `This exhibit is labeled as projected: it preserves the ${entry.family.toLowerCase()} intuition while running on the finite 4-neighbor maze graph.`,
+      procedure: `${entry.notes}\nCurrent browser rendition: ${executionMode(key).detail}.`,
+      watch: `Use the execution badge before comparing numbers; projected renditions teach the family behavior but are not full native implementations.`,
     };
   }
   renderFamilyFilter();
