@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.8
+
+- Added generated mathematical breakdown panels for every catalog-projected WebUI solver so the full algorithm museum has runnable traces and educational notes.
+- Extended the Playwright smoke test to assert catalog algorithms do not fall back to placeholder math copy.
+
 ## 0.2.7
 
 - Converted the full 85-entry algorithm catalog from planned coverage to implemented runnable renditions across Python, GUI/TUI selection, and the WebUI solver gallery.

@@ -1898,6 +1898,15 @@ async function renderRoadmap() {
         : "Yes",
       notes: `${entry.notes} Projected onto the current finite 4-neighbor maze graph for this browser rendition.`,
     };
+    breakdowns[key] = {
+      summary: `${entry.name} as a ${entry.family.toLowerCase()} view over the current maze graph.`,
+      graph: "Finite 4-neighbor grid graph",
+      cost: entry.space,
+      formula: entry.time,
+      invariant: `Projected ${entry.family.toLowerCase()} rendition over the finite 4-neighbor maze graph.`,
+      procedure: entry.notes,
+      watch: `Compare visited cells, frontier pressure, path length, and calculated bound against direct grid-search baselines.`,
+    };
   }
   renderAlgorithmButtons();
   renderComparison();

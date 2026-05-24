@@ -101,6 +101,14 @@ try {
     const pathLength = Number(await page.locator("#pathLength").innerText());
     assert.ok(pathLength > 0, `${algorithm} should render a real path`);
   }
+  await page.click('[data-algorithm="SAT Path Encoding"]');
+  await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
+    timeout: 15_000,
+  });
+  assert.ok(
+    !(await page.locator("#mathSummary").innerText()).includes("No mathematical breakdown"),
+    "catalog algorithms should render an educational math breakdown",
+  );
 
   await screenshot(page, "webui-smoke-desktop.png");
   await page.setViewportSize({ width: 390, height: 900 });
