@@ -15,6 +15,9 @@ def test_generation_registry_exposes_researched_algorithms():
         "Hunt and Kill",
         "Binary Tree",
         "Sidewinder",
+        "Growing Tree",
+        "Eller",
+        "Recursive Division",
     } <= set(GENERATION_REGISTRY)
 
 

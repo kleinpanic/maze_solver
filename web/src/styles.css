@@ -139,6 +139,11 @@ button:focus-visible {
   gap: 6px;
 }
 
+.segments button {
+  min-height: 38px;
+  white-space: normal;
+}
+
 button {
   border: 1px solid rgba(145, 163, 184, 0.24);
   border-radius: 6px;
@@ -236,6 +241,10 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+}
+
+.inspector section:last-child {
+  overflow-x: auto;
 }
 
 th,

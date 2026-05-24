@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && cp index.html dist/index.html && cp src/main.js dist/main.js",
+    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && cp index.html dist/index.html && cp src/main.js dist/main.js && cp favicon.svg dist/favicon.svg",
     "dev": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
     "test": "node --check src/main.js"
   },

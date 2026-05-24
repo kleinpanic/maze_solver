@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -27,6 +28,10 @@
               <option>Recursive Backtracker</option>
               <option>Prim's</option>
               <option>Kruskal</option>
+              <option>Growing Tree</option>
+              <option>Binary Tree</option>
+              <option>Sidewinder</option>
+              <option>Recursive Division</option>
             </select>
           </label>
 
@@ -37,6 +42,12 @@
               <button data-algorithm="DFS">DFS</button>
               <button data-algorithm="A*">A*</button>
               <button data-algorithm="Dijkstra">Dijkstra</button>
+              <button data-algorithm="UCS">UCS</button>
+              <button data-algorithm="Bidirectional BFS">Bi-BFS</button>
+              <button data-algorithm="Greedy Best-First">Greedy</button>
+              <button data-algorithm="IDDFS">IDDFS</button>
+              <button data-algorithm="Bellman-Ford">Bellman</button>
+              <button data-algorithm="Dead-End Filling">Dead-End</button>
             </div>
           </div>
 
@@ -76,7 +87,7 @@
             <h3>Comparison</h3>
             <table>
               <thead>
-                <tr><th>Algorithm</th><th>Optimal</th><th>Weighted</th></tr>
+                <tr><th>Algorithm</th><th>Family</th><th>Optimal</th><th>Time</th></tr>
               </thead>
               <tbody id="comparisonRows"></tbody>
             </table>

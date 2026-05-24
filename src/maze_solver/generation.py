@@ -97,6 +97,30 @@ GENERATION_REGISTRY: dict[str, GenerationInfo] = {
         notes="Fast row-wise algorithm with visible directional texture.",
         references=("Classical sidewinder maze generation.",),
     ),
+    "Growing Tree": GenerationInfo(
+        key="Growing Tree",
+        name="Growing Tree",
+        family="Configurable frontier growth",
+        produces_perfect_maze=True,
+        notes="Blends recursive-backtracker and Prim-like behavior by varying frontier cell selection.",
+        references=("Classical growing-tree maze generation.",),
+    ),
+    "Eller": GenerationInfo(
+        key="Eller",
+        name="Eller's Algorithm",
+        family="Row-wise set merging",
+        produces_perfect_maze=True,
+        notes="Builds one row at a time while maintaining set connectivity constraints.",
+        references=("Eller's row-wise perfect maze algorithm.",),
+    ),
+    "Recursive Division": GenerationInfo(
+        key="Recursive Division",
+        name="Recursive Division",
+        family="Wall subdivision",
+        produces_perfect_maze=False,
+        notes="Starts open and recursively adds walls with one passage through each division.",
+        references=("Classical recursive division maze generation.",),
+    ),
 }
 
 
@@ -137,6 +161,9 @@ def _builders() -> dict[str, MazeBuilder]:
         "Hunt and Kill": hunt_and_kill_maze,
         "Binary Tree": binary_tree_maze,
         "Sidewinder": sidewinder_maze,
+        "Growing Tree": growing_tree_maze,
+        "Eller": eller_maze,
+        "Recursive Division": recursive_division_maze,
     }
 
 
@@ -326,6 +353,98 @@ def sidewinder_maze(rows: int, cols: int, rng: random.Random) -> np.ndarray:
                 if not at_northern_boundary:
                     maze[(member[0] - 1, member[1])] = PASSAGE
                 run = []
+    return maze
+
+
+def growing_tree_maze(rows: int, cols: int, rng: random.Random) -> np.ndarray:
+    maze = _blank(rows, cols)
+    active = [default_start()]
+    maze[default_start()] = PASSAGE
+
+    while active:
+        index = len(active) - 1 if rng.random() < 0.7 else rng.randrange(len(active))
+        current = active[index]
+        neighbors = [(cell, wall) for cell, wall in two_step_neighbors(current, rows, cols) if maze[cell] == WALL]
+        if not neighbors:
+            active.pop(index)
+            continue
+        next_cell, wall = rng.choice(neighbors)
+        maze[wall] = PASSAGE
+        maze[next_cell] = PASSAGE
+        active.append(next_cell)
+    return maze
+
+
+def eller_maze(rows: int, cols: int, rng: random.Random) -> np.ndarray:
+    maze = _blank(rows, cols)
+    cell_cols = list(range(1, cols - 1, 2))
+    sets: dict[int, int] = {}
+    next_set = 1
+
+    for row in range(1, rows - 1, 2):
+        last_row = row >= rows - 2
+        for col in cell_cols:
+            maze[row, col] = PASSAGE
+            if col not in sets:
+                sets[col] = next_set
+                next_set += 1
+
+        for left, right in zip(cell_cols, cell_cols[1:], strict=False):
+            should_join = last_row or rng.choice([True, False])
+            if should_join and sets[left] != sets[right]:
+                maze[row, left + 1] = PASSAGE
+                old_set = sets[right]
+                new_set = sets[left]
+                sets = {col: (new_set if set_id == old_set else set_id) for col, set_id in sets.items()}
+
+        if last_row:
+            continue
+
+        next_sets: dict[int, int] = {}
+        for set_id in set(sets.values()):
+            members = [col for col, member_set in sets.items() if member_set == set_id]
+            rng.shuffle(members)
+            vertical_count = rng.randint(1, len(members))
+            for col in members[:vertical_count]:
+                maze[row + 1, col] = PASSAGE
+                maze[row + 2, col] = PASSAGE
+                next_sets[col] = set_id
+        sets = next_sets
+    return maze
+
+
+def recursive_division_maze(rows: int, cols: int, rng: random.Random) -> np.ndarray:
+    maze = np.zeros((rows, cols), dtype=int)
+    maze[0, :] = WALL
+    maze[-1, :] = WALL
+    maze[:, 0] = WALL
+    maze[:, -1] = WALL
+
+    def divide(top: int, bottom: int, left: int, right: int) -> None:
+        height = bottom - top + 1
+        width = right - left + 1
+        if height < 3 or width < 3:
+            return
+
+        horizontal = height > width if height != width else rng.choice([True, False])
+        if horizontal:
+            wall_row = rng.choice(list(range(top + 1, bottom, 2)))
+            passage_col = rng.choice(list(range(left, right + 1, 2)))
+            for col in range(left, right + 1):
+                maze[wall_row, col] = WALL
+            maze[wall_row, passage_col] = PASSAGE
+            divide(top, wall_row - 1, left, right)
+            divide(wall_row + 1, bottom, left, right)
+        else:
+            wall_col = rng.choice(list(range(left + 1, right, 2)))
+            passage_row = rng.choice(list(range(top, bottom + 1, 2)))
+            for row in range(top, bottom + 1):
+                maze[row, wall_col] = WALL
+            maze[passage_row, wall_col] = PASSAGE
+            divide(top, bottom, left, wall_col - 1)
+            divide(top, bottom, wall_col + 1, right)
+
+    divide(1, rows - 2, 1, cols - 2)
     return maze
 
 

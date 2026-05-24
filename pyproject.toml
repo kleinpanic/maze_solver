@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "maze-solver"
 version = "0.1.0"
-description = "Maze generation and pathfinding visualizer with GUI, TUI, and WebUI ambitions."
+description = "Maze generation and pathfinding visualizer with GUI, TUI, and WebUI interfaces."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

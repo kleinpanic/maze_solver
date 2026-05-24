@@ -9,7 +9,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from maze_generator import generate_maze
-from pathfinding_algorithms import a_star_generator, bfs_generator, dfs_generator, dijkstra_generator
+from pathfinding_algorithms import SOLVER_REGISTRY
 from render import Render
 
 
@@ -141,24 +141,13 @@ class MazeSolverApp:
         # Get selected algorithm
         algorithm = self.render.update_algorithm_selection()
 
-        # Initialize the solver generator
-        if algorithm == "BFS":
-            self.solver_generator = bfs_generator(self.maze, (1, 1), (self.maze.shape[0] - 2, self.maze.shape[1] - 2))
-        elif algorithm == "DFS":
-            self.solver_generator = dfs_generator(self.maze, (1, 1), (self.maze.shape[0] - 2, self.maze.shape[1] - 2))
-        elif algorithm == "A*":
-            self.solver_generator = a_star_generator(
-                self.maze, (1, 1), (self.maze.shape[0] - 2, self.maze.shape[1] - 2)
-            )
-        elif algorithm == "Dijkstra":
-            self.solver_generator = dijkstra_generator(
-                self.maze, (1, 1), (self.maze.shape[0] - 2, self.maze.shape[1] - 2)
-            )
-        else:
+        solver = SOLVER_REGISTRY.get(algorithm)
+        if solver is None:
             messagebox.showerror("Error", f"Unknown algorithm: {algorithm}")
             self.solving = False
             self.stop_timer()
             return
+        self.solver_generator = solver(self.maze, (1, 1), (self.maze.shape[0] - 2, self.maze.shape[1] - 2))
 
         # Start the solving process
         self.root.after(0, self._process_solver_step)

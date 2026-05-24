@@ -3,22 +3,9 @@ from __future__ import annotations
 import argparse
 from collections.abc import Iterable
 
-from maze_solver.algorithms import (
-    ALGORITHM_REGISTRY,
-    a_star_generator,
-    bfs_generator,
-    dfs_generator,
-    dijkstra_generator,
-)
+from maze_solver.algorithms import ALGORITHM_REGISTRY, SOLVER_REGISTRY
 from maze_solver.generation import GENERATION_REGISTRY, generate_maze
 from maze_solver.grid import Cell, default_goal, default_start
-
-SOLVERS = {
-    "BFS": bfs_generator,
-    "DFS": dfs_generator,
-    "A*": a_star_generator,
-    "Dijkstra": dijkstra_generator,
-}
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -35,7 +22,7 @@ def main(argv: list[str] | None = None) -> None:
     )
     start = default_start()
     goal = default_goal(maze)
-    events = list(SOLVERS[args.algorithm](maze, start, goal))
+    events = list(SOLVER_REGISTRY[args.algorithm](maze, start, goal))
     path = [cell for action, cell, _steps in events if action == "path" and cell is not None]
     visited = {cell for action, cell, _steps in events if action == "visit" and cell is not None}
     frontier = {cell for action, cell, _steps in events if action == "enqueue" and cell is not None}
