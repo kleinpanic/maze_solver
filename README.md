@@ -36,6 +36,7 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 | Depth-First Search | Yes | No | No | `O(V + E)` | `O(V)` |
 | Flood Fill Solver | Yes | Yes | No | `O(V + E)` | `O(V)` |
 | A* Search | Yes | Yes | Yes | `O(E log V)` | `O(V)` |
+| Iterative Deepening A* | Yes | Yes | No | `O(b^d)` worst case | `O(d)` |
 | Dijkstra's Algorithm | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` |
 | Uniform-Cost Search | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` |
 | SPFA | Yes | Yes | Yes | `O(VE)` worst case | `O(V)` |

@@ -52,6 +52,16 @@ const algorithms = {
     complete: "Yes",
     notes: "Uses Manhattan distance as an admissible heuristic on 4-neighbor grids.",
   },
+  "IDA*": {
+    name: "Iterative Deepening A*",
+    family: "Memory-bounded heuristic search",
+    optimal: "Yes",
+    weighted: "No",
+    time: "O(b^d)",
+    space: "O(d)",
+    complete: "Yes",
+    notes: "Searches increasing f = g + h contours with depth-first memory use.",
+  },
   Dijkstra: {
     name: "Dijkstra's Algorithm",
     family: "Weighted shortest path",
@@ -229,6 +239,15 @@ const breakdowns = {
     invariant: "With a consistent Manhattan heuristic, the first goal pop is optimal.",
     procedure: "push start by f\npop lowest f\nrelax neighbors\ntrace parents at goal",
     watch: "A* should visit fewer cells than Dijkstra when the heuristic points cleanly toward the goal.",
+  },
+  "IDA*": {
+    summary: "Iterative deepening A* searches cost contours instead of keeping a full priority queue.",
+    graph: "Heuristic grid",
+    cost: "Unit edge cost",
+    formula: "threshold <- min f(n) above old threshold",
+    invariant: "No path with f(n) below the current threshold remains unexplored in that contour.",
+    procedure: "set threshold = h(start)\ndepth-first scan while g+h <= threshold\nraise to next exceeded f\nreturn first goal contour",
+    watch: "It revisits earlier contours like IDDFS, but the Manhattan heuristic keeps the contour closer to the goal.",
   },
   Dijkstra: {
     summary: "Uniform relaxation settles vertices in nondecreasing shortest-path cost.",
@@ -710,6 +729,7 @@ function solve(algorithm) {
   if (algorithm === "Tremaux") return solveTremaux(maze, start, end);
   if (algorithm === "Pledge") return solvePledge(maze, start, end);
   if (algorithm === "IDDFS") return solveIddfs(maze, start, end);
+  if (algorithm === "IDA*") return solveIdaStar(maze, start, end);
   if (algorithm === "Bellman-Ford") return solveBellmanFord(maze, start, end);
   if (algorithm === "Dead-End Filling") return solveDeadEndFilling(maze, start, end);
   if (algorithm === "Random Mouse") return solveRandomMouse(maze, start, end);
@@ -865,6 +885,41 @@ function solveIddfs(maze, start, end) {
         events.push(["enqueue", next]);
       }
     }
+  }
+  return events;
+}
+
+function solveIdaStar(maze, start, end) {
+  const events = [];
+  const openCells = maze.flat().filter((value) => value === OPEN).length;
+  const h = (cell) => Math.abs(cell[0] - end[0]) + Math.abs(cell[1] - end[1]);
+  let threshold = h(start);
+  while (threshold <= openCells) {
+    let nextThreshold = Infinity;
+    const stack = [[start, [start], 0]];
+    while (stack.length) {
+      const [current, path, gScore] = stack.pop();
+      const fScore = gScore + h(current);
+      if (fScore > threshold) {
+        nextThreshold = Math.min(nextThreshold, fScore);
+        continue;
+      }
+      events.push(["visit", current]);
+      if (key(current) === key(end)) {
+        for (const cell of path) events.push(["path", cell]);
+        return events;
+      }
+      const pathKeys = new Set(path.map(key));
+      const candidates = neighbors(current, maze)
+        .filter((next) => !pathKeys.has(key(next)))
+        .sort((a, b) => h(b) - h(a));
+      for (const next of candidates) {
+        events.push(["enqueue", next]);
+        stack.push([next, [...path, next], gScore + 1]);
+      }
+    }
+    if (nextThreshold === Infinity) break;
+    threshold = nextThreshold;
   }
   return events;
 }

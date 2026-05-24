@@ -81,6 +81,18 @@ ALGORITHM_REGISTRY: dict[str, AlgorithmInfo] = {
         notes="Shortest paths for graphs with non-negative edge weights.",
         references=("Dijkstra, 1959.",),
     ),
+    "IDA*": AlgorithmInfo(
+        key="IDA*",
+        name="Iterative Deepening A*",
+        family="Memory-bounded heuristic search",
+        weighted=False,
+        optimal=True,
+        complete=True,
+        time_complexity="O(b^d) worst case",
+        space_complexity="O(d)",
+        notes="Runs depth-first contours by increasing f = g + h thresholds; optimal with an admissible heuristic.",
+        references=("Korf, 1985; iterative-deepening heuristic search.",),
+    ),
     "UCS": AlgorithmInfo(
         key="UCS",
         name="Uniform-Cost Search",
@@ -484,6 +496,50 @@ def a_star_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[Solv
     yield ("done", None, steps)
 
 
+def ida_star_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+    if start == end:
+        yield ("visit", start, 1)
+        yield ("path", start, 1)
+        yield ("done", None, 1)
+        return
+
+    max_depth = int(np.count_nonzero(maze == 0))
+    threshold = heuristic(start, end)
+    steps = 0
+
+    while threshold <= max_depth:
+        next_threshold = float("inf")
+        stack: list[tuple[Cell, list[Cell], int]] = [(start, [start], 0)]
+
+        while stack:
+            current, path, g_score = stack.pop()
+            f_score = g_score + heuristic(current, end)
+            if f_score > threshold:
+                next_threshold = min(next_threshold, f_score)
+                continue
+
+            steps += 1
+            yield ("visit", current, steps)
+            if current == end:
+                for cell in path:
+                    yield ("path", cell, steps)
+                yield ("done", None, steps)
+                return
+
+            path_cells = set(path)
+            candidates = [neighbor for neighbor in adjacent_cells(current, maze) if neighbor not in path_cells]
+            candidates.sort(key=lambda neighbor: heuristic(neighbor, end), reverse=True)
+            for neighbor in candidates:
+                yield ("enqueue", neighbor, steps)
+                stack.append((neighbor, [*path, neighbor], g_score + 1))
+
+        if next_threshold == float("inf"):
+            break
+        threshold = int(next_threshold)
+
+    yield ("done", None, steps)
+
+
 def bidirectional_bfs_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
     if start == end:
         yield ("visit", start, 1)
@@ -835,6 +891,7 @@ SOLVER_REGISTRY: dict[str, Callable[..., Generator[SolverEvent, None, None]]] = 
     "DFS": dfs_generator,
     "Flood Fill": flood_fill_generator,
     "A*": a_star_generator,
+    "IDA*": ida_star_generator,
     "Dijkstra": dijkstra_generator,
     "UCS": uniform_cost_generator,
     "SPFA": spfa_generator,

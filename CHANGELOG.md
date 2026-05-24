@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Added Iterative Deepening A* across the Python core, terminal UI, desktop GUI selector, WebUI solver museum, tests, and documentation.
+- Added the IDA* mathematical breakdown to compare heuristic contour search against A*, IDDFS, and Dijkstra.
+
 ## 0.2.0
 
 - Added a WebUI math breakdown panel with graph model, cost model, recurrence, invariant, procedure, and instrumentation notes for each solver.

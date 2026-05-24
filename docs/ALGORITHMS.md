@@ -11,6 +11,7 @@ Maze Solver models a maze as a rectangular grid graph. Open cells are vertices, 
 | Depth-First Search | Graph traversal | Yes | No | No | `O(V + E)` | `O(V)` | Dives down corridors first and is useful for contrast against shortest-path methods. |
 | Flood Fill Solver | Distance transform | Yes | Yes | No | `O(V + E)` | `O(V)` | Computes distance labels from the goal, then follows the descending gradient. |
 | A* Search | Heuristic shortest path | Yes | Yes | Yes | `O(E log V)` with a heap | `O(V)` | Uses `f(n) = g(n) + h(n)` and Manhattan distance, which is admissible on this 4-neighbor grid. |
+| Iterative Deepening A* | Memory-bounded heuristic search | Yes | Yes | No | `O(b^d)` worst case | `O(d)` | Repeats depth-first scans over increasing `f = g + h` contours, trading repeated work for low memory. |
 | Dijkstra's Algorithm | Weighted shortest path | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` | Expands the cheapest settled frontier and supports non-negative edge weights. |
 | Uniform-Cost Search | Weighted shortest path | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` | The search-problem framing of Dijkstra's algorithm. |
 | SPFA | Queue-based edge relaxation | Yes | Yes | Yes | `O(VE)` worst case | `O(V)` | Bellman-Ford relaxation with a queue of changed vertices. |
@@ -46,7 +47,7 @@ Maze Solver models a maze as a rectangular grid graph. Open cells are vertices, 
 - E. W. Dijkstra, "A note on two problems in connexion with graphs", Numerische Mathematik, 1959.
 - P. E. Hart, N. J. Nilsson, and B. Raphael, "A Formal Basis for the Heuristic Determination of Minimum Cost Paths", IEEE Transactions on Systems Science and Cybernetics, 1968.
 - R. E. Bellman, "On a routing problem", Quarterly of Applied Mathematics, 1958.
-- R. E. Korf, "Depth-first iterative-deepening: An optimal admissible tree search", Artificial Intelligence, 1985.
+- R. E. Korf, "Depth-first iterative-deepening: An optimal admissible tree search", Artificial Intelligence, 1985, for IDDFS and IDA* style memory-bounded search.
 - D. B. Wilson, "Generating random spanning trees more quickly than the cover time", STOC, 1996.
 - D. Aldous and A. Broder, random-walk uniform spanning tree algorithms.
 - C. Y. Lee, "An Algorithm for Path Connections and Its Applications", IRE Transactions on Electronic Computers, 1961.
