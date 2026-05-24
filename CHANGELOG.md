@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Added a WebUI math breakdown panel with graph model, cost model, recurrence, invariant, procedure, and instrumentation notes for each solver.
+- Rethemed the Tkinter GUI with algorithm metadata, clearer runtime controls, and higher-contrast maze visualization colors.
+- Added TUI algorithm metadata, optional ANSI color output, and an explicit legend for terminal runs.
+
 ## 0.1.3
 
 - Added versioned WebUI asset URLs so GitHub Pages clients pick up the latest CSS and JavaScript immediately after deployment.

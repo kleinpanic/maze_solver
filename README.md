@@ -19,7 +19,9 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 - Real-time visualization of visited cells, frontier cells, and final paths.
 - Deterministic maze generation with seeds.
 - Shared Python package under `src/maze_solver`.
-- Browser-side educational WebUI with Canvas animation, Big-O notes, runtime metrics, and an algorithm comparison table.
+- Browser-side educational WebUI with Canvas animation, Big-O notes, runtime metrics, per-algorithm math breakdowns, and an algorithm comparison table.
+- Desktop GUI with algorithm metadata, runtime controls, and high-contrast visualization states.
+- Terminal UI with reproducible runs, optional ANSI color, and compact solver statistics.
 - CI for Python 3.11, 3.12, and 3.13.
 - GitHub Pages deployment from `web/dist`.
 - Automated tagged releases for `v*` tags, including Python distributions and a zipped WebUI build.
@@ -68,6 +70,8 @@ Run a terminal solve:
 ```bash
 maze-solver-tui --rows 21 --cols 41 --seed 2026 --algorithm Dijkstra
 ```
+
+Add `--color always --legend` for a colorized terminal render with the state legend.
 
 Run the WebUI locally:
 

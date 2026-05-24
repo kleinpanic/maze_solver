@@ -184,6 +184,171 @@ const algorithms = {
   },
 };
 
+const breakdowns = {
+  BFS: {
+    summary: "Layered graph expansion over a grid graph G = (V, E).",
+    graph: "Grid graph",
+    cost: "Unit edge cost",
+    formula: "dist[v] = dist[u] + 1",
+    invariant: "The first time a cell is dequeued, its edge-count distance is minimal.",
+    procedure: "enqueue start\npop by FIFO layer\nrecord parent for every new cell\ntrace parents from goal",
+    watch: "The cyan wave grows in distance layers; magenta appears only after the route is reconstructed.",
+  },
+  Lee: {
+    summary: "Wavefront routing labels every reachable grid cell by distance from the source.",
+    graph: "Raster grid",
+    cost: "Unit wire length",
+    formula: "wave[n + 1] = neighbors(wave[n])",
+    invariant: "A cell's wave label is the shortest rectilinear path length from the start.",
+    procedure: "label source 0\nexpand unlabeled neighbors\nstop when target is labeled\nwalk labels backward",
+    watch: "It behaves like BFS, but the distance-label view is useful for routing and circuit-layout intuition.",
+  },
+  DFS: {
+    summary: "Stack-based traversal explores one branch to exhaustion before backtracking.",
+    graph: "Grid graph",
+    cost: "Unweighted",
+    formula: "stack <- stack + unvisited_neighbors(u)",
+    invariant: "Every visited cell belongs to the current depth-first search forest.",
+    procedure: "push start\npop newest cell\npush unseen neighbors\nreconstruct first found route",
+    watch: "The route can look decisive but is not guaranteed shortest; compare path length against BFS.",
+  },
+  "Flood Fill": {
+    summary: "A distance transform from the goal creates a scalar field over the maze.",
+    graph: "Grid graph",
+    cost: "Unit edge cost",
+    formula: "D(u) = 1 + min D(v)",
+    invariant: "Distance labels decrease by one along any reconstructed shortest path.",
+    procedure: "start wave at goal\nlabel every reachable cell\nfrom start choose lower labels\nstop at zero",
+    watch: "Coverage is often high because the whole reachable field is measured before the path is traced.",
+  },
+  "A*": {
+    summary: "Best-first search combines known cost and admissible heuristic estimate.",
+    graph: "Weighted grid",
+    cost: "g + h priority",
+    formula: "f(n) = g(n) + h(n)",
+    invariant: "With a consistent Manhattan heuristic, the first goal pop is optimal.",
+    procedure: "push start by f\npop lowest f\nrelax neighbors\ntrace parents at goal",
+    watch: "A* should visit fewer cells than Dijkstra when the heuristic points cleanly toward the goal.",
+  },
+  Dijkstra: {
+    summary: "Uniform relaxation settles vertices in nondecreasing shortest-path cost.",
+    graph: "Weighted graph",
+    cost: "Non-negative",
+    formula: "d[v] = min(d[v], d[u] + w(u,v))",
+    invariant: "Once a vertex is settled, no cheaper path to it remains undiscovered.",
+    procedure: "seed d[start] = 0\npop lowest d\nrelax outgoing edges\nrepeat until goal",
+    watch: "It is optimal without heuristics, so its explored area is usually broader than A*.",
+  },
+  UCS: {
+    summary: "Uniform-cost search is Dijkstra's algorithm expressed as path search.",
+    graph: "Weighted graph",
+    cost: "Path cost",
+    formula: "priority(path) = sum edge_costs",
+    invariant: "The first removed goal path has minimum accumulated cost.",
+    procedure: "queue path by cost\nexpand cheapest path\nreplace worse costs\nreturn first goal",
+    watch: "On unit-cost mazes it matches Dijkstra and BFS path length.",
+  },
+  SPFA: {
+    summary: "Queue-based relaxation revisits only vertices whose distance just improved.",
+    graph: "Weighted graph",
+    cost: "Relaxation",
+    formula: "if d[u] + w < d[v], enqueue(v)",
+    invariant: "Every queued vertex may still improve its neighbors.",
+    procedure: "queue start\npop changed vertex\nrelax neighbors\nrequeue improved cells",
+    watch: "It often looks efficient, but its worst case is Bellman-Ford class.",
+  },
+  "Bidirectional BFS": {
+    summary: "Two BFS waves reduce depth by meeting from both endpoints.",
+    graph: "Grid graph",
+    cost: "Unit edge cost",
+    formula: "work ≈ 2 b^(d/2)",
+    invariant: "When frontiers meet, both halves are shortest layer expansions.",
+    procedure: "expand from start\nexpand from goal\nfind intersection\njoin parent chains",
+    watch: "The explored region should be shallower around each endpoint than one-direction BFS.",
+  },
+  "Greedy Best-First": {
+    summary: "A heuristic-only priority chases apparent closeness to the goal.",
+    graph: "Grid graph",
+    cost: "Heuristic only",
+    formula: "priority(n) = h(n)",
+    invariant: "The frontier is ordered by estimated remaining distance, not path cost.",
+    procedure: "score by Manhattan distance\npop smallest h\nignore accumulated cost\ntrace first goal",
+    watch: "It can look fast and still choose a longer route around traps.",
+  },
+  "Left-Hand Rule": {
+    summary: "A local navigation policy keeps a consistent wall on the left side.",
+    graph: "Embedded maze",
+    cost: "Walk length",
+    formula: "turn order = left, straight, right, back",
+    invariant: "The walker remains adjacent to the same wall component when possible.",
+    procedure: "face east\ntry left first\nmove along wall\nstop at goal or bound",
+    watch: "Path length can balloon because this is topology-driven, not graph-optimal.",
+  },
+  "Right-Hand Rule": {
+    summary: "The mirrored wall follower keeps the right side attached to a wall.",
+    graph: "Embedded maze",
+    cost: "Walk length",
+    formula: "turn order = right, straight, left, back",
+    invariant: "The walker tracks a wall component using only local state.",
+    procedure: "face east\ntry right first\nmove along wall\nstop at goal or bound",
+    watch: "Compare it with left-hand rule; different wall components can produce different routes.",
+  },
+  Tremaux: {
+    summary: "Passage marking prevents infinite cycling in mazes with loops.",
+    graph: "Undirected graph",
+    cost: "Edge traversals",
+    formula: "mark(edge) <= 2",
+    invariant: "A passage used twice should not be selected again.",
+    procedure: "mark chosen passage\nprefer unmarked edges\nbacktrack on dead ends\nstop at goal",
+    watch: "It behaves like disciplined exploration rather than shortest-path optimization.",
+  },
+  Pledge: {
+    summary: "Obstacle following with signed turn accumulation recovers a preferred heading.",
+    graph: "Embedded maze",
+    cost: "Walk length",
+    formula: "leave wall when turn_sum = 0 and heading = preferred",
+    invariant: "The turn sum records net rotation around the current obstacle.",
+    procedure: "choose preferred heading\nfollow obstacle when blocked\ntrack turn sum\nresume heading at zero",
+    watch: "It is useful for obstacle escape intuition, but it is not a general shortest-path solver.",
+  },
+  IDDFS: {
+    summary: "Depth-first search is repeated with increasing depth limits.",
+    graph: "Search tree",
+    cost: "Depth",
+    formula: "limit = 0, 1, 2, ... d",
+    invariant: "Each iteration explores all paths up to the current depth bound.",
+    procedure: "set depth limit\nrun depth-limited DFS\nincrease limit\nreturn first goal depth",
+    watch: "Memory stays low, but repeated shallow work increases runtime.",
+  },
+  "Bellman-Ford": {
+    summary: "Dynamic programming relaxes all edges until no shorter paths remain.",
+    graph: "Weighted graph",
+    cost: "Edge relaxation",
+    formula: "repeat |V|-1 times: relax every edge",
+    invariant: "After i passes, shortest paths using at most i edges are known.",
+    procedure: "initialize distances\nscan all edges\nupdate improved costs\nstop when stable",
+    watch: "Coverage is broad by design; it is the clearest relaxation baseline.",
+  },
+  "Dead-End Filling": {
+    summary: "Maze reduction removes cul-de-sacs that cannot belong to a solution corridor.",
+    graph: "Corridor graph",
+    cost: "Topological pruning",
+    formula: "remove v when degree(v) <= 1",
+    invariant: "Non-start/non-goal dead ends are never required for an exit path.",
+    procedure: "queue dead ends\nremove leaves\nupdate neighbor degree\ntrace remaining route",
+    watch: "Visited count can be low because pruning is shown separately from full graph search.",
+  },
+  "Random Mouse": {
+    summary: "Random walk baseline selects a legal neighboring cell without memory.",
+    graph: "Markov chain",
+    cost: "Expected hitting time",
+    formula: "P(next = v) = 1 / degree(u)",
+    invariant: "No monotonic progress invariant exists; success is probabilistic.",
+    procedure: "list legal exits\nchoose one at random\nwalk until goal or cap\nreport walked route",
+    watch: "It is intentionally inefficient; long paths are the point of the comparison.",
+  },
+};
+
 let state = {
   maze: null,
   algorithm: "BFS",
@@ -222,6 +387,13 @@ const controls = {
   workFactor: document.querySelector("#workFactor"),
   eventCount: document.querySelector("#eventCount"),
   openCells: document.querySelector("#openCells"),
+  mathSummary: document.querySelector("#mathSummary"),
+  graphModel: document.querySelector("#graphModel"),
+  costModel: document.querySelector("#costModel"),
+  mathFormula: document.querySelector("#mathFormula"),
+  mathInvariant: document.querySelector("#mathInvariant"),
+  mathProcedure: document.querySelector("#mathProcedure"),
+  mathWatch: document.querySelector("#mathWatch"),
   comparisonRows: document.querySelector("#comparisonRows"),
   algorithmGroup: document.querySelector("#algorithmGroup"),
 };
@@ -948,6 +1120,15 @@ function draw() {
 
 function updateMetrics() {
   const info = algorithms[state.algorithm];
+  const breakdown = breakdowns[state.algorithm] ?? {
+    summary: "No mathematical breakdown is available for this solver yet.",
+    graph: "Grid graph",
+    cost: "See implementation",
+    formula: "See solver trace",
+    invariant: "No invariant documented.",
+    procedure: "Run the solver and inspect the event trace.",
+    watch: "Compare visited cells, frontier pressure, and path length.",
+  };
   const openCount = state.maze ? state.maze.flat().filter((value) => value === OPEN).length : 0;
   const coverage = openCount ? Math.round((state.visited.size / openCount) * 100) : 0;
   const workFactor = state.path.length ? (state.visited.size / state.path.length).toFixed(2) : "0.00";
@@ -965,6 +1146,13 @@ function updateMetrics() {
   controls.workFactor.textContent = workFactor;
   controls.eventCount.textContent = state.events.length;
   controls.openCells.textContent = openCount;
+  controls.mathSummary.textContent = breakdown.summary;
+  controls.graphModel.textContent = breakdown.graph;
+  controls.costModel.textContent = breakdown.cost;
+  controls.mathFormula.textContent = breakdown.formula;
+  controls.mathInvariant.textContent = breakdown.invariant;
+  controls.mathProcedure.textContent = breakdown.procedure;
+  controls.mathWatch.textContent = breakdown.watch;
 }
 
 function renderComparison() {

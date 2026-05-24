@@ -83,13 +83,15 @@ select {
 }
 
 .sidebar,
-.stage {
+.stage,
+.math-panel {
   border: 1px solid rgba(145, 163, 184, 0.16);
   background: rgba(12, 20, 29, 0.86);
   border-radius: 8px;
 }
 
 .sidebar {
+  align-self: start;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -169,10 +171,10 @@ button.primary {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: auto;
 }
 
 .stage {
+  align-self: start;
   min-height: 520px;
   display: grid;
   place-items: start center;
@@ -212,6 +214,73 @@ p {
   color: #9fb0c3;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.math-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.math-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.math-heading h3 {
+  font-size: 18px;
+}
+
+.model-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.model-badges span {
+  border: 1px solid rgba(53, 208, 199, 0.32);
+  border-radius: 999px;
+  color: #9fe7e2;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.math-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.math-grid article {
+  border: 1px solid rgba(145, 163, 184, 0.14);
+  border-radius: 8px;
+  background: #101a25;
+  padding: 14px;
+  min-width: 0;
+}
+
+.math-grid span {
+  display: block;
+  color: #9fb0c3;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.math-grid strong,
+.math-grid pre {
+  display: block;
+  margin: 8px 0 0;
+  color: #e8eef6;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .theory,
@@ -285,9 +354,25 @@ th {
     width: min(100%, 86vw);
     max-height: none;
   }
+
+  .math-heading {
+    display: grid;
+  }
+
+  .model-badges {
+    justify-content: flex-start;
+  }
+
+  .math-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 560px) {
+  .math-grid {
+    grid-template-columns: 1fr;
+  }
+
   table,
   thead,
   tbody,
