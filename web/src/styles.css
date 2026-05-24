@@ -175,7 +175,7 @@ button.primary {
 .stage {
   min-height: 520px;
   display: grid;
-  place-items: center;
+  place-items: start center;
   padding: 14px;
 }
 

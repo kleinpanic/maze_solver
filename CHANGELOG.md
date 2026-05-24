@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Fixed desktop WebUI canvas alignment so the maze stays visible near the top of the stage beside the full comparison table.
+
 ## 0.1.1
 
 - Expanded the solver catalog with Lee, Flood Fill, SPFA, left-hand and right-hand wall followers, Tremaux, Pledge, and Random Mouse.

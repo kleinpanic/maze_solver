@@ -103,8 +103,8 @@ npm run build
 Create a release:
 
 ```bash
-git tag v0.1.1
-git push origin v0.1.1
+git tag vX.Y.Z
+git push origin vX.Y.Z
 ```
 
 The `Release` workflow verifies Python and WebUI checks before publishing the GitHub release.
