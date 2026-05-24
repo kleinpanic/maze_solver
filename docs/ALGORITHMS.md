@@ -4,6 +4,8 @@ Maze Solver models a maze as a rectangular grid graph. Open cells are vertices, 
 
 The Python core and WebUI share the same named solver and generator catalog so browser demonstrations, terminal runs, and desktop GUI experiments describe the same algorithms.
 
+Generator output is audited as a graph, not only by checking whether the entrance can reach the exit. After optional loop/noise shaping, the implementation repairs disconnected open components by carving them back into the component reachable from the start. The resulting maze can be perfect, braided, or recursively partitioned depending on the generator, but open cells should not be stranded in unreachable islands.
+
 ## Solvers
 
 | Algorithm | Family | Complete | Optimal | Weighted | Time | Space | Notes |

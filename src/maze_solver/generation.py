@@ -11,6 +11,7 @@ from maze_solver.grid import (
     PASSAGE,
     WALL,
     Cell,
+    adjacent_cells,
     default_goal,
     default_start,
     iter_cells,
@@ -145,7 +146,8 @@ def generate_maze(
         maze = builder(rows, cols, rng)
         _apply_loops_and_noise(maze, rng, wall_density, dead_ends, branching_factor, connectedness)
         open_endpoints(maze)
-        if is_solvable(maze, default_start(), default_goal(maze)):
+        _connect_open_components(maze, rng)
+        if _all_passages_reachable_from_start(maze) and is_solvable(maze, default_start(), default_goal(maze)):
             return maze, used_seed
 
     raise RuntimeError("Unable to generate a solvable maze with the selected parameters.")
@@ -491,3 +493,85 @@ def _apply_loops_and_noise(
     )
     for cell in passage_cells[:closing_budget]:
         maze[cell] = WALL
+
+
+def _reachable_passages(maze: np.ndarray, start: Cell) -> set[Cell]:
+    if maze[start] != PASSAGE:
+        return set()
+    queue = [start]
+    seen = {start}
+    for cell in queue:
+        for neighbor in adjacent_cells(cell, maze):
+            if neighbor in seen:
+                continue
+            seen.add(neighbor)
+            queue.append(neighbor)
+    return seen
+
+
+def _open_components(maze: np.ndarray, excluded: set[Cell]) -> list[set[Cell]]:
+    components: list[set[Cell]] = []
+    remaining = {
+        (row, col)
+        for row in range(maze.shape[0])
+        for col in range(maze.shape[1])
+        if maze[row, col] == PASSAGE and (row, col) not in excluded
+    }
+    while remaining:
+        start = next(iter(remaining))
+        component = _reachable_passages(maze, start)
+        component &= remaining
+        components.append(component)
+        remaining -= component
+    return components
+
+
+def _carve_corridor_between(maze: np.ndarray, a: Cell, b: Cell, rng: random.Random) -> None:
+    row, col = a
+    target_row, target_col = b
+    axes = ("row", "col") if rng.choice([True, False]) else ("col", "row")
+
+    def carve_row() -> None:
+        nonlocal row
+        step = 1 if target_row >= row else -1
+        for next_row in range(row, target_row + step, step):
+            maze[next_row, col] = PASSAGE
+        row = target_row
+
+    def carve_col() -> None:
+        nonlocal col
+        step = 1 if target_col >= col else -1
+        for next_col in range(col, target_col + step, step):
+            maze[row, next_col] = PASSAGE
+        col = target_col
+
+    for axis in axes:
+        if axis == "row":
+            carve_row()
+        else:
+            carve_col()
+
+
+def _connect_open_components(maze: np.ndarray, rng: random.Random) -> None:
+    reachable = _reachable_passages(maze, default_start())
+    components = _open_components(maze, reachable)
+    while components:
+        component = min(
+            components,
+            key=lambda cells: min(abs(a[0] - b[0]) + abs(a[1] - b[1]) for a in reachable for b in cells),
+        )
+        main_cell, component_cell = min(
+            ((a, b) for a in reachable for b in component),
+            key=lambda pair: abs(pair[0][0] - pair[1][0]) + abs(pair[0][1] - pair[1][1]),
+        )
+        _carve_corridor_between(maze, main_cell, component_cell, rng)
+        reachable = _reachable_passages(maze, default_start())
+        components = _open_components(maze, reachable)
+
+
+def _all_passages_reachable_from_start(maze: np.ndarray) -> bool:
+    reachable = _reachable_passages(maze, default_start())
+    open_cells = {
+        (row, col) for row in range(maze.shape[0]) for col in range(maze.shape[1]) if maze[row, col] == PASSAGE
+    }
+    return open_cells <= reachable

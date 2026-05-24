@@ -1,4 +1,5 @@
 import { solveHadlockEvents } from "./hadlock.js";
+import { connectOpenComponents, isFullyConnected } from "./mazeConnectivity.js";
 import { mazeStatistics } from "./mazeStats.js";
 
 const WALL = 1;
@@ -969,7 +970,8 @@ function generateMaze() {
     }
     candidate[1][1] = OPEN;
     candidate[rows - 2][cols - 2] = OPEN;
-    if (pathExists(candidate)) {
+    connectOpenComponents(candidate, random);
+    if (isFullyConnected(candidate) && pathExists(candidate)) {
       maze = candidate;
       break;
     }
@@ -977,6 +979,9 @@ function generateMaze() {
   if (!maze) {
     const random = rng(baseSeed);
     maze = generators[generator](rows, cols, random);
+    maze[1][1] = OPEN;
+    maze[rows - 2][cols - 2] = OPEN;
+    connectOpenComponents(maze, random);
     usedSeed = baseSeed;
   }
   controls.seed.value = usedSeed;
@@ -1474,7 +1479,9 @@ function draw() {
   const rows = maze.length;
   const cols = maze[0].length;
   const cell = Math.min(canvas.width / cols, canvas.height / rows);
-  context.fillStyle = "#f5f7fb";
+  const offsetX = Math.floor((canvas.width - cell * cols) / 2);
+  const offsetY = Math.floor((canvas.height - cell * rows) / 2);
+  context.fillStyle = "#091017";
   context.fillRect(0, 0, canvas.width, canvas.height);
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -1485,7 +1492,7 @@ function draw() {
       if (state.path.some((pathCell) => key(pathCell) === id)) context.fillStyle = "#d84fd6";
       if (row === 1 && col === 1) context.fillStyle = "#45e08e";
       if (row === rows - 2 && col === cols - 2) context.fillStyle = "#ef5454";
-      context.fillRect(col * cell, row * cell, Math.ceil(cell), Math.ceil(cell));
+      context.fillRect(offsetX + col * cell, offsetY + row * cell, Math.ceil(cell), Math.ceil(cell));
     }
   }
 }

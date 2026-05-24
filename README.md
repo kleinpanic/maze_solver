@@ -17,7 +17,7 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 ## Features
 
 - Real-time visualization of visited cells, frontier cells, and final paths.
-- Deterministic maze generation with seeds.
+- Deterministic maze generation with seeds and a connected-open-component guarantee after noise/loop shaping.
 - Shared Python package under `src/maze_solver`.
 - Browser-side educational WebUI with Canvas animation, Big-O notes, runtime metrics, per-solver math breakdowns, generator theory, maze-structure statistics, and an algorithm comparison table.
 - Desktop GUI with algorithm metadata, runtime controls, and high-contrast visualization states.
@@ -55,6 +55,8 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 ## Generator Catalog
 
 Recursive Backtracker, Randomized Prim, Randomized Kruskal, Wilson, Aldous-Broder, Hunt and Kill, Binary Tree, Sidewinder, Growing Tree, Eller, and Recursive Division are available in the Python core and the WebUI. The browser view explains each generator's graph model, perfect-maze claim, asymptotic cost, texture bias, invariant, and carving procedure while reporting wall ratio, dead ends, junctions, and corridor bias for the current maze.
+
+Every generated maze keeps all open cells reachable from the start after the optional loop/noise pass. That means a seed can produce braided routes and extra rooms, but it should not leave disconnected islands that look playable while being unreachable.
 
 See [docs/ALGORITHMS.md](docs/ALGORITHMS.md) for the full catalog, complexity notes, and references.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.5
+
+- Added a connected-open-component repair pass to Python and WebUI maze generation so noise/loop shaping cannot leave unreachable open islands.
+- Added generation tests that assert all open cells remain reachable from the start under high wall-density and dead-end pressure.
+- Added WebUI connectivity utilities and tests so browser generation uses the same graph-level invariant.
+- Added an ephemeral-port Playwright smoke test to CI and releases so WebUI generator validation avoids fixed-port conflicts.
+
 ## 0.2.4
 
 - Added Hadlock's detour-number maze-routing algorithm across the Python core, GUI/TUI registries, WebUI solver museum, tests, and documentation.
