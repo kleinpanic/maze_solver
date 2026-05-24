@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.4
+
+- Added Hadlock's detour-number maze-routing algorithm across the Python core, GUI/TUI registries, WebUI solver museum, tests, and documentation.
+- Added the Hadlock mathematical breakdown so users can compare detour minimization against BFS, Lee routing, A*, and IDA*.
+
 ## 0.2.3
 
 - Added a WebUI generation model panel with family, perfect-maze claim, complexity, mathematical model, bias, invariant, and procedure notes for every maze generator.

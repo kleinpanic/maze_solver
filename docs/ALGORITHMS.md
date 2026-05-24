@@ -14,6 +14,7 @@ The Python core and WebUI share the same named solver and generator catalog so b
 | Flood Fill Solver | Distance transform | Yes | Yes | No | `O(V + E)` | `O(V)` | Computes distance labels from the goal, then follows the descending gradient. |
 | A* Search | Heuristic shortest path | Yes | Yes | Yes | `O(E log V)` with a heap | `O(V)` | Uses `f(n) = g(n) + h(n)` and Manhattan distance, which is admissible on this 4-neighbor grid. |
 | Iterative Deepening A* | Memory-bounded heuristic search | Yes | Yes | No | `O(b^d)` worst case | `O(d)` | Repeats depth-first scans over increasing `f = g + h` contours, trading repeated work for low memory. |
+| Hadlock's Algorithm | Detour-number maze routing | Yes | Yes | No | `O(V + E)` | `O(V)` | Uses 0-1 search over detours, prioritizing moves that reduce Manhattan distance before moves away from the target. |
 | Dijkstra's Algorithm | Weighted shortest path | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` | Expands the cheapest settled frontier and supports non-negative edge weights. |
 | Uniform-Cost Search | Weighted shortest path | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` | The search-problem framing of Dijkstra's algorithm. |
 | SPFA | Queue-based edge relaxation | Yes | Yes | Yes | `O(VE)` worst case | `O(V)` | Bellman-Ford relaxation with a queue of changed vertices. |
@@ -50,6 +51,7 @@ The Python core and WebUI share the same named solver and generator catalog so b
 - P. E. Hart, N. J. Nilsson, and B. Raphael, "A Formal Basis for the Heuristic Determination of Minimum Cost Paths", IEEE Transactions on Systems Science and Cybernetics, 1968.
 - R. E. Bellman, "On a routing problem", Quarterly of Applied Mathematics, 1958.
 - R. E. Korf, "Depth-first iterative-deepening: An optimal admissible tree search", Artificial Intelligence, 1985, for IDDFS and IDA* style memory-bounded search.
+- F. O. Hadlock, "A shortest path algorithm for grid graphs", Networks, 1977.
 - D. B. Wilson, "Generating random spanning trees more quickly than the cover time", STOC, 1996.
 - D. Aldous and A. Broder, random-walk uniform spanning tree algorithms.
 - C. Y. Lee, "An Algorithm for Path Connections and Its Applications", IRE Transactions on Electronic Computers, 1961.

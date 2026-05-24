@@ -93,6 +93,18 @@ ALGORITHM_REGISTRY: dict[str, AlgorithmInfo] = {
         notes="Runs depth-first contours by increasing f = g + h thresholds; optimal with an admissible heuristic.",
         references=("Korf, 1985; iterative-deepening heuristic search.",),
     ),
+    "Hadlock": AlgorithmInfo(
+        key="Hadlock",
+        name="Hadlock's Algorithm",
+        family="Detour-number maze routing",
+        weighted=False,
+        optimal=True,
+        complete=True,
+        time_complexity="O(V + E)",
+        space_complexity="O(V)",
+        notes="Minimizes detours away from Manhattan progress; on 4-neighbor unit grids this yields a shortest path.",
+        references=("Hadlock, 1977; shortest-path maze routing by detour number.",),
+    ),
     "UCS": AlgorithmInfo(
         key="UCS",
         name="Uniform-Cost Search",
@@ -540,6 +552,42 @@ def ida_star_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[So
     yield ("done", None, steps)
 
 
+def hadlock_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+    deque_frontier: deque[Cell] = deque([start])
+    detours: dict[Cell, int] = {start: 0}
+    parent: dict[Cell, Cell] = {}
+    settled: set[Cell] = set()
+    steps = 0
+
+    while deque_frontier:
+        current = deque_frontier.popleft()
+        if current in settled:
+            continue
+        settled.add(current)
+        steps += 1
+        yield ("visit", current, steps)
+        if current == end:
+            break
+
+        current_h = heuristic(current, end)
+        for neighbor in adjacent_cells(current, maze):
+            penalty = 0 if heuristic(neighbor, end) < current_h else 1
+            candidate = detours[current] + penalty
+            if candidate >= detours.get(neighbor, float("inf")):
+                continue
+            detours[neighbor] = candidate
+            parent[neighbor] = current
+            if penalty == 0:
+                deque_frontier.appendleft(neighbor)
+            else:
+                deque_frontier.append(neighbor)
+            yield ("enqueue", neighbor, steps)
+
+    for cell in reconstruct_path(parent, start, end):
+        yield ("path", cell, steps)
+    yield ("done", None, steps)
+
+
 def bidirectional_bfs_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
     if start == end:
         yield ("visit", start, 1)
@@ -892,6 +940,7 @@ SOLVER_REGISTRY: dict[str, Callable[..., Generator[SolverEvent, None, None]]] = 
     "Flood Fill": flood_fill_generator,
     "A*": a_star_generator,
     "IDA*": ida_star_generator,
+    "Hadlock": hadlock_generator,
     "Dijkstra": dijkstra_generator,
     "UCS": uniform_cost_generator,
     "SPFA": spfa_generator,

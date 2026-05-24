@@ -1,3 +1,4 @@
+import { solveHadlockEvents } from "./hadlock.js";
 import { mazeStatistics } from "./mazeStats.js";
 
 const WALL = 1;
@@ -63,6 +64,16 @@ const algorithms = {
     space: "O(d)",
     complete: "Yes",
     notes: "Searches increasing f = g + h contours with depth-first memory use.",
+  },
+  Hadlock: {
+    name: "Hadlock's Algorithm",
+    family: "Detour-number maze routing",
+    optimal: "Yes",
+    weighted: "No",
+    time: "O(V + E)",
+    space: "O(V)",
+    complete: "Yes",
+    notes: "Minimizes moves away from Manhattan progress before tracing a shortest maze route.",
   },
   Dijkstra: {
     name: "Dijkstra's Algorithm",
@@ -250,6 +261,15 @@ const breakdowns = {
     invariant: "No path with f(n) below the current threshold remains unexplored in that contour.",
     procedure: "set threshold = h(start)\ndepth-first scan while g+h <= threshold\nraise to next exceeded f\nreturn first goal contour",
     watch: "It revisits earlier contours like IDDFS, but the Manhattan heuristic keeps the contour closer to the goal.",
+  },
+  Hadlock: {
+    summary: "Detour-number routing treats every move away from the goal as the scarce resource.",
+    graph: "Rectilinear grid",
+    cost: "0-1 detour cost",
+    formula: "detour(v) = detour(u) + [h(v) > h(u)]",
+    invariant: "Cells are settled in nondecreasing detour count, so the first goal pop has minimum detour.",
+    procedure: "push start\nmove closer to goal at deque front\nmove away at deque back\ntrace parent links",
+    watch: "The search hugs Manhattan progress until walls force detours, making obstacles visibly expensive.",
   },
   Dijkstra: {
     summary: "Uniform relaxation settles vertices in nondecreasing shortest-path cost.",
@@ -1022,6 +1042,7 @@ function solve(algorithm) {
   if (algorithm === "Pledge") return solvePledge(maze, start, end);
   if (algorithm === "IDDFS") return solveIddfs(maze, start, end);
   if (algorithm === "IDA*") return solveIdaStar(maze, start, end);
+  if (algorithm === "Hadlock") return solveHadlock(maze, start, end);
   if (algorithm === "Bellman-Ford") return solveBellmanFord(maze, start, end);
   if (algorithm === "Dead-End Filling") return solveDeadEndFilling(maze, start, end);
   if (algorithm === "Random Mouse") return solveRandomMouse(maze, start, end);
@@ -1214,6 +1235,10 @@ function solveIdaStar(maze, start, end) {
     threshold = nextThreshold;
   }
   return events;
+}
+
+function solveHadlock(maze, start, end) {
+  return solveHadlockEvents(maze, start, end);
 }
 
 function solveWallFollower(maze, start, end, hand) {

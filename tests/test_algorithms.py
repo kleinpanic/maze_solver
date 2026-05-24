@@ -14,6 +14,7 @@ from maze_solver.algorithms import (
     dijkstra_generator,
     flood_fill_generator,
     greedy_best_first_generator,
+    hadlock_generator,
     ida_star_generator,
     iddfs_generator,
     lee_generator,
@@ -48,6 +49,7 @@ def test_registry_includes_expected_algorithms():
         "Flood Fill",
         "A*",
         "IDA*",
+        "Hadlock",
         "Dijkstra",
         "UCS",
         "SPFA",
@@ -123,6 +125,7 @@ def test_weighted_optimal_solvers_match_bfs_for_unit_weights():
         bidirectional_bfs_generator,
         iddfs_generator,
         bellman_ford_generator,
+        hadlock_generator,
     ):
         path = path_from(list(solver(maze, (1, 1), (4, 5))))
         assert_valid_path(maze, path, (1, 1), (4, 5))
