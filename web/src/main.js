@@ -710,7 +710,6 @@ const controls = {
   mathInvariant: document.querySelector("#mathInvariant"),
   mathProcedure: document.querySelector("#mathProcedure"),
   mathWatch: document.querySelector("#mathWatch"),
-  comparisonRows: document.querySelector("#comparisonRows"),
   roadmapSummary: document.querySelector("#roadmapSummary"),
   roadmapRows: document.querySelector("#roadmapRows"),
   algorithmGroup: document.querySelector("#algorithmGroup"),
@@ -2038,15 +2037,6 @@ function updateMetrics() {
   controls.mathWatch.textContent = breakdown.watch;
 }
 
-function renderComparison() {
-  controls.comparisonRows.innerHTML = Object.entries(algorithms)
-    .map(
-      ([key, info]) =>
-        `<tr><td data-label="Algorithm">${key}</td><td data-label="Family">${info.family}</td><td data-label="Guarantee">${info.complete} / ${info.optimal}</td><td data-label="Cost">${info.time}<br>${info.space}</td></tr>`,
-    )
-    .join("");
-}
-
 function shortAlgorithmLabel(name) {
   return name
     .replace(" Algorithm", "")
@@ -2167,7 +2157,6 @@ async function renderRoadmap() {
   }
   renderFamilyFilter();
   renderAlgorithmButtons();
-  renderComparison();
   const implemented = state.catalog.filter((entry) => entry.status === "implemented").length;
   const coverageRows = [...state.catalog, ...knownBacklog];
   const backlogCount = knownBacklog.length;
@@ -2216,7 +2205,6 @@ controls.seed.addEventListener("input", () => {
   state.autoSeed = null;
 });
 controls.run.addEventListener("click", run);
-renderComparison();
 await renderRoadmap();
 generateMaze({ randomizeSeed: true });
 

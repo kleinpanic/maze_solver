@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solver Comparison | Maze Solver Museum</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.17" />
+  </head>
+  <body>
+    <div class="app-shell comparison-shell">
+      <header class="topbar">
+        <a class="brand" href="./">
+          <span class="brand-mark"></span>
+          <span>Maze Solver Museum</span>
+        </a>
+        <div class="topbar-actions">
+          <a class="topbar-link active" href="./comparison.html">Comparison</a>
+          <a href="https://github.com/kleinpanic/maze_solver" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </header>
+
+      <main class="comparison-page">
+        <section class="comparison-hero">
+          <div>
+            <h1>Solver Comparison</h1>
+            <p>
+              A full-screen index of maze-solving families, implementation status, complexity bounds,
+              guarantees, references, and backlog coverage for finite 2D grid mazes.
+            </p>
+          </div>
+          <div class="comparison-actions">
+            <a class="primary-link" href="./">Back to Visualizer</a>
+          </div>
+        </section>
+
+        <section class="comparison-stat-grid" aria-label="Algorithm catalog statistics">
+          <article><span>Total Tracked</span><strong id="statTotal">0</strong></article>
+          <article><span>Implemented</span><strong id="statImplemented">0</strong></article>
+          <article><span>Backlog</span><strong id="statBacklog">0</strong></article>
+          <article><span>Families</span><strong id="statFamilies">0</strong></article>
+          <article><span>Optimal Claims</span><strong id="statOptimal">0</strong></article>
+          <article><span>Weighted Models</span><strong id="statWeighted">0</strong></article>
+        </section>
+
+        <section class="comparison-control-panel">
+          <label>
+            Search
+            <input id="comparisonSearch" type="search" placeholder="Search algorithm, family, reference" />
+          </label>
+          <label>
+            Family
+            <select id="comparisonFamily">
+              <option value="all">All families</option>
+            </select>
+          </label>
+          <label>
+            Status
+            <select id="comparisonStatus">
+              <option value="all">All states</option>
+              <option value="implemented">Implemented</option>
+              <option value="backlog">Backlog</option>
+              <option value="planned">Planned</option>
+            </select>
+          </label>
+          <div class="comparison-count" id="comparisonCount">Loading algorithms</div>
+        </section>
+
+        <section class="comparison-table-panel">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Family</th>
+                <th>State</th>
+                <th>Time</th>
+                <th>Space</th>
+                <th>Guarantee / Notes</th>
+                <th>Reference</th>
+              </tr>
+            </thead>
+            <tbody id="comparisonRows"></tbody>
+          </table>
+        </section>
+
+        <section class="comparison-breakdown">
+          <article>
+            <h2>Status Mix</h2>
+            <div id="statusBreakdown" class="breakdown-list"></div>
+          </article>
+          <article>
+            <h2>Family Mix</h2>
+            <div id="familyBreakdown" class="breakdown-list"></div>
+          </article>
+          <article>
+            <h2>Complexity Mix</h2>
+            <div id="complexityBreakdown" class="breakdown-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./comparison.js?v=0.2.17"></script>
+  </body>
+</html>

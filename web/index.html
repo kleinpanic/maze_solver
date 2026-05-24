@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver Museum</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.16" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.17" />
   </head>
   <body>
     <div class="app-shell">
@@ -16,6 +16,7 @@
         </div>
         <div class="topbar-actions">
           <span id="status" class="status" aria-live="polite">ready</span>
+          <a class="topbar-link" href="./comparison.html">Comparison</a>
           <a href="https://github.com/kleinpanic/maze_solver" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </header>
@@ -212,15 +213,6 @@ trace goal path</pre>
             <span id="inspectorMathWatch">The cyan wave grows in distance layers.</span>
           </section>
 
-          <details class="comparison-panel">
-            <summary>Solver Comparison</summary>
-            <table>
-              <thead>
-                <tr><th>Algorithm</th><th>Family</th><th>Guarantee</th><th>Cost</th></tr>
-              </thead>
-              <tbody id="comparisonRows"></tbody>
-            </table>
-          </details>
         </aside>
 
         <section class="math-panel generator-panel">
@@ -293,6 +285,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.16"></script>
+    <script type="module" src="./main.js?v=0.2.17"></script>
   </body>
 </html>

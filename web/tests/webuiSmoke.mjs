@@ -56,6 +56,8 @@ try {
   await page.waitForFunction(() => /^\d+\/\d+\b/.test(document.querySelector("#algorithmCount")?.textContent ?? ""));
   assert.equal(await page.locator("#roadmapSummary").count(), 0);
   assert.equal(await page.locator("#roadmapRows").count(), 0);
+  assert.equal(await page.locator(".comparison-panel").count(), 0);
+  assert.equal(await page.locator('a[href="./comparison.html"]').count(), 1);
   const solverButtons = await page.locator("[data-algorithm]").count();
   assert.ok(solverButtons >= 80);
   assert.match(await page.locator("#algorithmCount").innerText(), new RegExp(`^${solverButtons}/${solverButtons}\\b`));
@@ -196,7 +198,21 @@ try {
   assert.ok(!(await page.locator("#mathSummary").innerText()).includes("No mathematical breakdown"));
 
   await screenshot(page, "webui-smoke-desktop.png");
+  await page.click('a[href="./comparison.html"]');
+  await page.waitForURL(/comparison\.html$/);
+  await page.waitForFunction(() => /^\d+\/\d+ shown$/.test(document.querySelector("#comparisonCount")?.textContent ?? ""));
+  assert.match(await page.locator("h1").innerText(), /Solver Comparison/);
+  assert.ok((await page.locator("#comparisonRows tr").count()) >= 120);
+  assert.equal(await page.locator("#statImplemented").innerText(), "85");
+  assert.ok(Number(await page.locator("#statBacklog").innerText()) > 0);
+  await page.fill("#comparisonSearch", "dijkstra");
+  assert.ok((await page.locator("#comparisonRows tr").count()) >= 2);
+  assert.match(await page.locator("#comparisonCount").innerText(), /^\d+\/\d+ shown$/);
+  await screenshot(page, "comparison-desktop.png");
   await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(`http://127.0.0.1:${port}/comparison.html`, { waitUntil: "networkidle" });
+  await screenshot(page, "comparison-mobile.png");
+  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle" });
   await screenshot(page, "webui-smoke-mobile.png");
   assert.deepEqual(errors, []);
   console.log(`validated ${generators.length} generators on ephemeral port ${port}`);

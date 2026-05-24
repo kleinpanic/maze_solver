@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.17
+
+- Moved solver comparison into a dedicated `comparison.html` WebUI page with
+  catalog stats, filters, status breakdowns, family breakdowns, and a full
+  algorithm table.
+- Added a top navigation link to the comparison endpoint and removed the
+  comparison disclosure from the right inspector.
+- Rebalanced the desktop visualizer layout by extending the left solver list
+  and the center stage height to better match the right inspector rail.
+
 ## 0.2.16
 
 - Resized the WebUI maze canvas to match the active maze geometry so wide mazes
