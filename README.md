@@ -19,9 +19,9 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 - Real-time visualization of visited cells, frontier cells, and final paths.
 - Deterministic maze generation with seeds and a connected-open-component guarantee after noise/loop shaping.
 - Shared Python package under `src/maze_solver`.
-- Browser-side educational WebUI with Canvas animation, Big-O notes, runtime metrics, per-solver math breakdowns, generator theory, maze-structure statistics, and an algorithm comparison table.
-- Desktop GUI with algorithm metadata, runtime controls, and high-contrast visualization states.
-- Terminal UI with reproducible runs, optional ANSI color, and compact solver statistics.
+- Browser-side educational WebUI with Canvas animation, researched complexity notes, calculated per-maze graph bounds, runtime metrics, per-solver math breakdowns, generator theory, maze-structure statistics, and an algorithm roadmap.
+- Desktop GUI with algorithm metadata, restart-on-selection solving, runtime controls, graph telemetry, calculated bound estimates, and high-contrast visualization states.
+- Terminal UI with reproducible runs, optional ANSI color, calculated graph/work statistics, and a `--catalog` view for the full roadmap.
 - CI for Python 3.11, 3.12, and 3.13.
 - GitHub Pages deployment from `web/dist`.
 - Automated tagged releases for `v*` tags, including Python distributions and a zipped WebUI build.
@@ -59,6 +59,7 @@ Recursive Backtracker, Randomized Prim, Randomized Kruskal, Wilson, Aldous-Brode
 Every generated maze keeps all open cells reachable from the start after the optional loop/noise pass. That means a seed can produce braided routes and extra rooms, but it should not leave disconnected islands that look playable while being unreachable.
 
 See [docs/ALGORITHMS.md](docs/ALGORITHMS.md) for the full catalog, complexity notes, and references.
+The machine-readable roadmap is tracked in [src/maze_solver/algorithm_catalog.json](src/maze_solver/algorithm_catalog.json) and currently covers 85 maze, grid, routing, robotics, sampling, optimization, and constraint-solving approaches.
 
 ## Quick Start
 

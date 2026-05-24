@@ -5,8 +5,10 @@ import sys
 from collections.abc import Iterable
 
 from maze_solver.algorithms import ALGORITHM_REGISTRY, SOLVER_REGISTRY
+from maze_solver.catalog import algorithm_catalog, catalog_summary
 from maze_solver.generation import GENERATION_REGISTRY, generate_maze
 from maze_solver.grid import Cell, default_goal, default_start
+from maze_solver.stats import complexity_score, format_complexity_score, maze_statistics, run_statistics
 
 ANSI = {
     "reset": "\033[0m",
@@ -24,6 +26,10 @@ ANSI = {
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+    if args.catalog:
+        print_catalog()
+        return
+
     maze, seed = generate_maze(
         args.rows,
         args.cols,
@@ -43,16 +49,32 @@ def main(argv: list[str] | None = None) -> None:
     steps = events[-1][2] if events else 0
     use_color = args.color == "always" or (args.color == "auto" and sys.stdout.isatty())
     info = ALGORITHM_REGISTRY[args.algorithm]
+    maze_stats = maze_statistics(maze, start, goal)
+    run_stats = run_statistics(maze, path, visited, frontier, steps, len(events))
+    score = format_complexity_score(complexity_score(info, maze_stats, max(1, len(path))))
+    implemented, tracked = catalog_summary()
 
     print(f"Maze Solver TUI | {args.generator} | {args.algorithm} | seed {seed}")
     print(
         f"{info.name} | {info.family} | time={info.time_complexity} | "
         f"space={info.space_complexity} | optimal={info.optimal} | complete={info.complete}"
     )
+    print(
+        f"catalog={implemented}/{tracked} implemented/tracked | V={maze_stats.vertices} E={maze_stats.edges} bound={score}"
+    )
     if args.legend:
         print("Legend: S=start G=goal *=path +=frontier .=visited █=wall")
     print(render_maze(maze, start, goal, path, visited, frontier, color=use_color))
-    print(f"path={len(path)} visited={len(visited)} frontier={len(frontier)} steps={steps}")
+    print(
+        f"path={run_stats.path_length} visited={run_stats.visited} frontier={run_stats.frontier} "
+        f"steps={run_stats.steps} events={run_stats.events} coverage={run_stats.coverage:.1%} "
+        f"work_factor={run_stats.work_factor:.2f}"
+    )
+    print(
+        f"maze=open={maze_stats.vertices} walls={maze_stats.walls} wall_ratio={maze_stats.wall_ratio:.1%} "
+        f"dead_ends={maze_stats.dead_ends} junctions={maze_stats.junctions} "
+        f"corridor_bias={maze_stats.corridor_bias:.2f}"
+    )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -68,7 +90,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--algorithm", choices=tuple(ALGORITHM_REGISTRY), default="BFS")
     parser.add_argument("--color", choices=("auto", "always", "never"), default="auto")
     parser.add_argument("--legend", action="store_true")
+    parser.add_argument("--catalog", action="store_true", help="Print the tracked maze-solving algorithm catalog.")
     return parser.parse_args(argv)
+
+
+def print_catalog() -> None:
+    implemented, tracked = catalog_summary()
+    print(f"Maze Solver Algorithm Catalog | {implemented}/{tracked} implemented/tracked")
+    for entry in algorithm_catalog():
+        print(
+            f"{entry['status']:11} | {entry['name']} | {entry['family']} | time={entry['time']} | space={entry['space']}"
+        )
 
 
 def paint(symbol: str, role: str, color: bool) -> str:

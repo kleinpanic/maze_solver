@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.5" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.6" />
   </head>
   <body>
     <div class="app-shell">
@@ -105,6 +105,8 @@
             <div><span>Coverage</span><strong id="coverageRatio">0%</strong></div>
             <div><span>Work / Path</span><strong id="workFactor">0.00</strong></div>
             <div><span>Events</span><strong id="eventCount">0</strong></div>
+            <div><span>Calculated Bound</span><strong id="boundScore">0</strong></div>
+            <div><span>V / E</span><strong id="graphSize">0 / 0</strong></div>
             <div><span>Open Cells</span><strong id="openCells">0</strong></div>
             <div><span>Walls</span><strong id="wallRatio">0%</strong></div>
             <div><span>Dead Ends</span><strong id="deadEnds">0</strong></div>
@@ -112,15 +114,25 @@
             <div><span>Corridor Bias</span><strong id="corridorBias">0.00</strong></div>
           </section>
 
-          <section>
-            <h3>Comparison</h3>
+          <section class="catalog-summary">
+            <h3>Roadmap</h3>
+            <p id="roadmapSummary">Loading algorithm catalog...</p>
+          </section>
+
+          <details class="comparison-panel">
+            <summary>Comparison</summary>
             <table>
               <thead>
                 <tr><th>Algorithm</th><th>Family</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th></tr>
               </thead>
               <tbody id="comparisonRows"></tbody>
             </table>
-          </section>
+          </details>
+
+          <details class="comparison-panel">
+            <summary>Tracked 2D Algorithm Roadmap</summary>
+            <div id="roadmapRows" class="roadmap-list"></div>
+          </details>
         </aside>
 
         <section class="math-panel generator-panel">
@@ -193,6 +205,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.5"></script>
+    <script type="module" src="./main.js?v=0.2.6"></script>
   </body>
 </html>

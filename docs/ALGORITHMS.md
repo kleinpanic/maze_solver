@@ -2,7 +2,9 @@
 
 Maze Solver models a maze as a rectangular grid graph. Open cells are vertices, passable north/south/east/west moves are edges, and the default edge cost is one. That keeps the visualizer approachable while still exposing standard graph-search and maze-generation ideas.
 
-The Python core and WebUI share the same named solver and generator catalog so browser demonstrations, terminal runs, and desktop GUI experiments describe the same algorithms.
+The Python core, WebUI, GUI, and TUI share solver metadata so browser demonstrations, terminal runs, and desktop experiments describe the same implemented algorithms. The larger machine-readable roadmap in `src/maze_solver/algorithm_catalog.json` tracks 85 implemented and planned 2D maze/grid/plane solving approaches, from BFS and Dijkstra through JPS, Theta*, D* Lite, RRT*, potential fields, metaheuristics, and constraint encodings.
+
+Asymptotic notation is documented from the algorithm model, while the interfaces calculate the current maze graph size and a concrete dominant-term estimate from `V` open cells, `E` passable edges, observed path depth, and the selected solver's complexity family. Those calculated values are run telemetry, not replacement proofs for the asymptotic bounds.
 
 Generator output is audited as a graph, not only by checking whether the entrance can reach the exit. After optional loop/noise shaping, the implementation repairs disconnected open components by carving them back into the component reachable from the start. The resulting maze can be perfect, braided, or recursively partitioned depending on the generator, but open cells should not be stranded in unreachable islands.
 

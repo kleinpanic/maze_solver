@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.6
+
+- Added an 85-entry machine-readable 2D maze/path-planning algorithm roadmap and tests that enforce catalog breadth plus implemented solver parity.
+- Updated the WebUI so solver buttons generate a fresh maze and run immediately, while showing calculated graph bounds from current `V`, `E`, path depth, and solver complexity family.
+- Improved the WebUI layout with a larger maze stage, compact controls, roadmap summary, collapsed comparison tables, and desktop/mobile Playwright validation.
+- Added TUI maze texture stats, graph/work telemetry, calculated bound estimates, and a `--catalog` roadmap view.
+- Upgraded the Tkinter GUI with restart-on-algorithm-selection behavior, a graph telemetry panel, centered square-cell rendering, and calculated bound estimates.
+
 ## 0.2.5
 
 - Added a connected-open-component repair pass to Python and WebUI maze generation so noise/loop shaping cannot leave unreachable open islands.

@@ -11,10 +11,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    linear-gradient(135deg, rgba(26, 42, 61, 0.7), transparent 42%),
-    radial-gradient(circle at 72% 18%, rgba(49, 196, 190, 0.1), transparent 28%),
-    #0b1117;
+  background: linear-gradient(180deg, #0b1117 0%, #111923 48%, #0b1117 100%);
 }
 
 button,
@@ -76,9 +73,9 @@ select {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(230px, 280px) minmax(360px, 1fr) minmax(260px, 330px);
-  gap: 16px;
-  padding: 16px;
+  grid-template-columns: minmax(250px, 300px) minmax(560px, 1fr) minmax(300px, 370px);
+  gap: 14px;
+  padding: 14px;
   min-height: 0;
 }
 
@@ -92,10 +89,10 @@ select {
 
 .sidebar {
   align-self: start;
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -137,12 +134,14 @@ button:focus-visible {
 
 .segments {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
 
 .segments button {
-  min-height: 38px;
+  min-height: 34px;
+  padding: 7px 6px;
+  font-size: 12px;
   white-space: normal;
 }
 
@@ -175,16 +174,19 @@ button.primary {
 
 .stage {
   align-self: start;
-  min-height: 520px;
+  min-height: calc(100vh - 86px);
   display: grid;
-  place-items: start center;
+  place-items: center;
   padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(19, 29, 41, 0.96), rgba(7, 13, 19, 0.96)),
+    #0b1117;
 }
 
 canvas {
-  width: min(100%, 76vh);
+  width: min(100%, calc(100vh - 130px));
   aspect-ratio: 1;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 130px);
   border-radius: 8px;
   background: #091017;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
@@ -291,7 +293,8 @@ p {
 
 .theory,
 .metrics {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .theory div,
@@ -321,7 +324,24 @@ p {
 }
 
 .metrics strong {
-  font-size: 24px;
+  font-size: 19px;
+  line-height: 1.15;
+}
+
+.comparison-panel {
+  border-top: 1px solid rgba(145, 163, 184, 0.14);
+  padding-top: 10px;
+}
+
+.comparison-panel summary {
+  color: #e8eef6;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.comparison-panel[open] {
+  max-height: 360px;
+  overflow: auto;
 }
 
 table {
@@ -330,8 +350,56 @@ table {
   font-size: 13px;
 }
 
-.inspector section:last-child {
-  overflow-x: auto;
+.catalog-summary {
+  border: 1px solid rgba(53, 208, 199, 0.24);
+  border-radius: 8px;
+  background: rgba(53, 208, 199, 0.06);
+  padding: 12px;
+}
+
+.roadmap-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.roadmap-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  align-items: center;
+  border-bottom: 1px solid rgba(145, 163, 184, 0.12);
+  padding-bottom: 8px;
+  color: #9fb0c3;
+  font-size: 12px;
+}
+
+.roadmap-row strong {
+  color: #e8eef6;
+}
+
+.roadmap-row span:last-of-type,
+.roadmap-row em {
+  grid-column: 2;
+  font-style: normal;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.status-pill.implemented {
+  background: rgba(69, 224, 142, 0.16);
+  color: #79f2b0;
+}
+
+.status-pill.planned {
+  background: rgba(240, 184, 77, 0.15);
+  color: #ffd37a;
 }
 
 th,
@@ -371,6 +439,11 @@ th {
 
   .math-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .stage {
+    min-height: auto;
+    order: -1;
   }
 }
 

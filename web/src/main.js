@@ -525,6 +525,8 @@ let state = {
   events: [],
   timer: null,
   step: 0,
+  autoSeed: null,
+  catalog: [],
 };
 
 const canvas = document.querySelector("#mazeCanvas");
@@ -552,6 +554,8 @@ const controls = {
   coverageRatio: document.querySelector("#coverageRatio"),
   workFactor: document.querySelector("#workFactor"),
   eventCount: document.querySelector("#eventCount"),
+  boundScore: document.querySelector("#boundScore"),
+  graphSize: document.querySelector("#graphSize"),
   openCells: document.querySelector("#openCells"),
   wallRatio: document.querySelector("#wallRatio"),
   deadEnds: document.querySelector("#deadEnds"),
@@ -574,6 +578,8 @@ const controls = {
   mathProcedure: document.querySelector("#mathProcedure"),
   mathWatch: document.querySelector("#mathWatch"),
   comparisonRows: document.querySelector("#comparisonRows"),
+  roadmapSummary: document.querySelector("#roadmapSummary"),
+  roadmapRows: document.querySelector("#roadmapRows"),
   algorithmGroup: document.querySelector("#algorithmGroup"),
 };
 
@@ -935,12 +941,14 @@ function generateRecursiveDivision(rows, cols, random) {
   return maze;
 }
 
-function generateMaze() {
+function generateMaze(options = {}) {
+  clearInterval(state.timer);
   const rows = odd(controls.rows.value);
   const cols = odd(controls.cols.value);
   controls.rows.value = rows;
   controls.cols.value = cols;
-  const baseSeed = controls.seed.value === "" ? Math.floor(Math.random() * 1_000_000_000) : Number(controls.seed.value);
+  const shouldRandomize = options.randomizeSeed || controls.seed.value === "" || controls.seed.value === String(state.autoSeed);
+  const baseSeed = shouldRandomize ? Math.floor(Math.random() * 1_000_000_000) : Number(controls.seed.value);
   const generator = controls.generator.value;
   const generators = {
     "Recursive Backtracker": generateRecursive,
@@ -985,7 +993,19 @@ function generateMaze() {
     usedSeed = baseSeed;
   }
   controls.seed.value = usedSeed;
-  state = { ...state, maze, path: [], visited: new Set(), frontier: new Set(), frontierPeak: 0, events: [], step: 0 };
+  state = {
+    ...state,
+    maze,
+    path: [],
+    visited: new Set(),
+    frontier: new Set(),
+    frontierPeak: 0,
+    events: [],
+    timer: null,
+    step: 0,
+    autoSeed: shouldRandomize ? usedSeed : null,
+  };
+  controls.status.textContent = "ready";
   draw();
   updateMetrics();
 }
@@ -1497,6 +1517,43 @@ function draw() {
   }
 }
 
+function graphEdgeCount(maze) {
+  if (!maze) return 0;
+  let edges = 0;
+  for (let row = 0; row < maze.length; row += 1) {
+    for (let col = 0; col < maze[0].length; col += 1) {
+      if (maze[row][col] !== OPEN) continue;
+      if (maze[row + 1]?.[col] === OPEN) edges += 1;
+      if (maze[row]?.[col + 1] === OPEN) edges += 1;
+    }
+  }
+  return edges;
+}
+
+function calculatedBound(info, vertices, edges, pathLength) {
+  const v = Math.max(1, vertices);
+  const e = Math.max(1, edges);
+  const d = Math.max(1, pathLength);
+  const b = Math.max(2, Math.round((2 * e) / v));
+  const time = info.time;
+  if (time.includes("Unbounded")) return null;
+  if (time.includes("E log V") || time.includes("log V")) return Math.round((v + e) * Math.log2(Math.max(2, v)));
+  if (time.includes("V + E")) return v + e;
+  if (time.includes("VE")) return v * e;
+  if (time.includes("b^(d/2)")) return Math.round(b ** Math.max(1, Math.ceil(d / 2)));
+  if (time.includes("b^d")) return Math.min(1_000_000_000_000, b ** Math.min(d, 40));
+  if (time.includes("O(k)")) return Math.max(d, v);
+  return null;
+}
+
+function formatBound(value) {
+  if (value === null) return "unbounded";
+  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return String(value);
+}
+
 function updateMetrics() {
   const info = algorithms[state.algorithm];
   const breakdown = breakdowns[state.algorithm] ?? {
@@ -1510,6 +1567,8 @@ function updateMetrics() {
   };
   const mazeStats = mazeStatistics(state.maze);
   const openCount = mazeStats.open;
+  const edges = graphEdgeCount(state.maze);
+  const bound = calculatedBound(info, openCount, edges, state.path.length);
   const coverage = openCount ? Math.round((state.visited.size / openCount) * 100) : 0;
   const workFactor = state.path.length ? (state.visited.size / state.path.length).toFixed(2) : "0.00";
   controls.algorithmName.textContent = info.name;
@@ -1525,6 +1584,8 @@ function updateMetrics() {
   controls.coverageRatio.textContent = `${coverage}%`;
   controls.workFactor.textContent = workFactor;
   controls.eventCount.textContent = state.events.length;
+  controls.boundScore.textContent = formatBound(bound);
+  controls.graphSize.textContent = `${openCount} / ${edges}`;
   controls.openCells.textContent = openCount;
   controls.wallRatio.textContent = `${mazeStats.wallRatio}%`;
   controls.deadEnds.textContent = mazeStats.deadEnds;
@@ -1558,16 +1619,41 @@ function renderComparison() {
     .join("");
 }
 
+async function renderRoadmap() {
+  try {
+    const response = await fetch("./algorithm_catalog.json", { cache: "no-store" });
+    state.catalog = await response.json();
+  } catch {
+    state.catalog = Object.keys(algorithms).map((name) => ({ name, family: algorithms[name].family, status: "implemented" }));
+  }
+  const implemented = state.catalog.filter((entry) => entry.status === "implemented").length;
+  controls.roadmapSummary.textContent = `${implemented}/${state.catalog.length} implemented/tracked algorithms across graph search, routing, grid pruning, robotics, and optimization.`;
+  controls.roadmapRows.innerHTML = state.catalog
+    .map(
+      (entry) =>
+        `<div class="roadmap-row"><span class="status-pill ${entry.status}">${entry.status}</span><strong>${entry.name}</strong><span>${entry.family}</span><em>${entry.time}</em></div>`,
+    )
+    .join("");
+}
+
 controls.algorithmGroup.addEventListener("click", (event) => {
   if (!(event.target instanceof HTMLButtonElement)) return;
   state.algorithm = event.target.dataset.algorithm;
   document.querySelectorAll("[data-algorithm]").forEach((button) => button.classList.toggle("active", button === event.target));
-  updateMetrics();
+  generateMaze({ randomizeSeed: true });
+  run();
 });
-controls.generate.addEventListener("click", generateMaze);
-controls.generator.addEventListener("change", generateMaze);
+controls.generate.addEventListener("click", () => generateMaze({ randomizeSeed: true }));
+controls.generator.addEventListener("change", () => {
+  generateMaze({ randomizeSeed: true });
+  run();
+});
+controls.seed.addEventListener("input", () => {
+  state.autoSeed = null;
+});
 controls.run.addEventListener("click", run);
 renderComparison();
-generateMaze();
+await renderRoadmap();
+generateMaze({ randomizeSeed: true });
 
 export { generateKruskal, generatePrim, generateRecursive, solve };

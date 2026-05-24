@@ -8,6 +8,7 @@ import { chromium } from "playwright";
 const contentTypes = {
   ".css": "text/css",
   ".html": "text/html",
+  ".json": "application/json",
   ".js": "text/javascript",
   ".svg": "image/svg+xml",
 };
@@ -52,6 +53,9 @@ try {
   });
 
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle" });
+  await page.waitForFunction(() => document.querySelector("#roadmapSummary")?.textContent.includes("implemented/tracked"));
+  const roadmapRows = await page.locator(".roadmap-row").count();
+  assert.ok(roadmapRows >= 80, "algorithm roadmap should track a broad 2D solver catalog");
   await page.fill("#rows", "21");
   await page.fill("#cols", "25");
   await page.evaluate(() => {
@@ -66,7 +70,17 @@ try {
     await page.selectOption("#generator", { label: generator });
     await page.fill("#seed", "707");
     await page.click("#generate");
+    await page.click('[data-algorithm="Dijkstra"]');
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
+      timeout: 15_000,
+    });
+    const firstSeed = await page.locator("#seed").inputValue();
     await page.click('[data-algorithm="BFS"]');
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
+      timeout: 15_000,
+    });
+    const secondSeed = await page.locator("#seed").inputValue();
+    assert.notEqual(firstSeed, secondSeed, `${generator} solver buttons should restart with a fresh maze`);
     await page.click("#run");
     await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
       timeout: 15_000,

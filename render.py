@@ -37,6 +37,7 @@ class Render:
         # Configure root window's grid
         self.root.columnconfigure(0, weight=1)
         self.root.columnconfigure(1, weight=4)
+        self.root.columnconfigure(2, weight=1)
         self.root.rowconfigure(0, weight=1)
 
         # Left sidebar frame
@@ -46,6 +47,11 @@ class Render:
         # Main canvas frame
         self.main_frame = ttk.Frame(self.root, padding="16", style="Panel.TFrame")
         self.main_frame.grid(row=0, column=1, sticky="NSWE")
+        self.main_frame.rowconfigure(0, weight=1)
+        self.main_frame.columnconfigure(0, weight=1)
+
+        self.info_panel = ttk.Frame(self.root, padding="16", style="Panel.TFrame")
+        self.info_panel.grid(row=0, column=2, sticky="NSWE")
 
         # Canvas for maze visualization
         self.canvas = tk.Canvas(
@@ -56,10 +62,11 @@ class Render:
             highlightthickness=1,
             highlightbackground=PALETTE["border"],
         )
-        self.canvas.pack(fill="both", expand=True)
+        self.canvas.grid(row=0, column=0, sticky="NSWE")
 
         # Populate sidebar with controls
         self.create_sidebar_controls()
+        self.create_info_panel()
 
     def configure_style(self):
         style = ttk.Style(self.root)
@@ -165,7 +172,7 @@ class Render:
         self.algorithm_combobox["values"] = tuple(ALGORITHM_REGISTRY)
         self.algorithm_combobox.current(0)
         self.algorithm_combobox.pack(fill="x", pady=5)
-        self.algorithm_combobox.bind("<<ComboboxSelected>>", lambda _event: self.update_algorithm_panel())
+        self.algorithm_combobox.bind("<<ComboboxSelected>>", lambda _event: self.app.select_algorithm_and_restart())
 
         self.algorithm_info_var = tk.StringVar()
         self.algorithm_info = ttk.Label(
@@ -189,6 +196,10 @@ class Render:
         ttk.Label(self.sidebar, text="Runtime", style="Section.TLabel").pack(anchor="w", pady=(16, 0))
         self.timer_label = ttk.Label(self.sidebar, text="00:00", style="Metric.TLabel")
         self.timer_label.pack(pady=(20, 0))
+        self.status_var = tk.StringVar(value="Ready")
+        ttk.Label(self.sidebar, textvariable=self.status_var, style="Body.TLabel", wraplength=260).pack(
+            anchor="w", pady=(10, 0)
+        )
         ttk.Label(
             self.sidebar,
             text="Legend: green start, red goal, cyan visited, amber frontier, magenta final path.",
@@ -196,6 +207,30 @@ class Render:
             wraplength=260,
         ).pack(anchor="w", pady=(12, 0))
         self.update_algorithm_panel()
+
+    def create_info_panel(self):
+        ttk.Label(self.info_panel, text="Run Telemetry", style="Title.TLabel").pack(anchor="w")
+        ttk.Label(
+            self.info_panel,
+            text="Live graph size, maze texture, and calculated bound estimate for the selected solver.",
+            style="Body.TLabel",
+            wraplength=260,
+        ).pack(anchor="w", pady=(4, 18))
+        self.maze_stats_var = tk.StringVar(value="Generate a maze to calculate graph statistics.")
+        ttk.Label(
+            self.info_panel,
+            textvariable=self.maze_stats_var,
+            style="Body.TLabel",
+            wraplength=260,
+            justify="left",
+        ).pack(anchor="w", fill="x")
+        ttk.Label(self.info_panel, text="Catalog", style="Section.TLabel").pack(anchor="w", pady=(22, 8))
+        ttk.Label(
+            self.info_panel,
+            text=f"{len(ALGORITHM_REGISTRY)} implemented solvers in the desktop selector. Planned roadmap lives in the shared catalog.",
+            style="Body.TLabel",
+            wraplength=260,
+        ).pack(anchor="w")
 
     def update_algorithm_panel(self):
         algorithm = self.algorithm_combobox.get()
@@ -205,6 +240,25 @@ class Render:
         info = ALGORITHM_REGISTRY[algorithm]
         self.algorithm_info_var.set(
             f"{info.name}\n{info.family}\nTime {info.time_complexity} | Space {info.space_complexity}\n{info.notes}"
+        )
+
+    def algorithm_info_for(self, algorithm):
+        if algorithm not in ALGORITHM_REGISTRY:
+            algorithm = next(iter(ALGORITHM_REGISTRY))
+        return ALGORITHM_REGISTRY[algorithm]
+
+    def set_status(self, text):
+        self.status_var.set(text)
+
+    def update_maze_stats(self, stats, score):
+        self.maze_stats_var.set(
+            f"V={stats.vertices} open cells\n"
+            f"E={stats.edges} grid edges\n"
+            f"Walls={stats.walls} ({stats.wall_ratio:.1%})\n"
+            f"Dead ends={stats.dead_ends}\n"
+            f"Junctions={stats.junctions}\n"
+            f"Corridor bias={stats.corridor_bias:.2f}\n"
+            f"Calculated bound={score}"
         )
 
     def update_timer_label(self, time_str):
@@ -284,52 +338,43 @@ class Render:
     def update_algorithm_selection(self):
         return self.algorithm_var.get()
 
+    def cell_bounds(self, maze, row, col):
+        rows, cols = maze.shape
+        width = max(1, self.canvas.winfo_width())
+        height = max(1, self.canvas.winfo_height())
+        cell_size = max(1, min(width / cols, height / rows))
+        x_offset = (width - cell_size * cols) / 2
+        y_offset = (height - cell_size * rows) / 2
+        x0 = x_offset + col * cell_size
+        y0 = y_offset + row * cell_size
+        return x0, y0, x0 + cell_size, y0 + cell_size
+
     def draw_maze(self, maze):
         self.canvas.delete("all")
+        self.canvas.configure(bg=PALETTE["wall"])
         rows, cols = maze.shape
-
-        # Calculate cell size and allow small margins for separation
-        cell_width = self.canvas.winfo_width() / cols
-        cell_height = self.canvas.winfo_height() / rows
 
         for r in range(rows):
             for c in range(cols):
-                x0 = c * cell_width
-                y0 = r * cell_height
-                x1 = x0 + cell_width - 1  # Slightly reduce size to restore previous look
-                y1 = y0 + cell_height - 1  # Slightly reduce size to restore previous look
+                x0, y0, x1, y1 = self.cell_bounds(maze, r, c)
                 if maze[r][c] == 1:
                     self.canvas.create_rectangle(x0, y0, x1, y1, fill=PALETTE["wall"], outline="")
                 else:
                     self.canvas.create_rectangle(x0, y0, x1, y1, fill=PALETTE["open"], outline="")
 
         # Mark start and end points
-        self.canvas.create_rectangle(
-            1 * cell_width, 1 * cell_height, 2 * cell_width, 2 * cell_height, fill=PALETTE["start"], outline=""
-        )
-        self.canvas.create_rectangle(
-            (cols - 2) * cell_width,
-            (rows - 2) * cell_height,
-            (cols - 1) * cell_width,
-            (rows - 1) * cell_height,
-            fill=PALETTE["goal"],
-            outline="",
-        )
+        self.highlight_cell((1, 1), PALETTE["start"], force=True)
+        self.highlight_cell((rows - 2, cols - 2), PALETTE["goal"], force=True)
 
-    def highlight_cell(self, cell, color):
+    def highlight_cell(self, cell, color, force=False):
         rows, cols = self.app.maze.shape
-        cell_width = self.canvas.winfo_width() / cols
-        cell_height = self.canvas.winfo_height() / rows
         r, c = cell
 
         # Skip start and end
-        if (r, c) == (1, 1) or (r, c) == (rows - 2, cols - 2):
+        if not force and ((r, c) == (1, 1) or (r, c) == (rows - 2, cols - 2)):
             return
 
-        x0 = c * cell_width
-        y0 = r * cell_height
-        x1 = x0 + cell_width
-        y1 = y0 + cell_height
+        x0, y0, x1, y1 = self.cell_bounds(self.app.maze, r, c)
 
         # Overlay the cell with the specified color
         self.canvas.create_rectangle(x0, y0, x1, y1, fill=color, outline="")
@@ -338,61 +383,23 @@ class Render:
         if not path:
             return
         rows, cols = self.app.maze.shape
-        cell_width = self.canvas.winfo_width() / cols
-        cell_height = self.canvas.winfo_height() / rows
 
         for cell in path:
             r, c = cell
-            x0 = c * cell_width
-            y0 = r * cell_height
-            x1 = x0 + cell_width
-            y1 = y0 + cell_height
             # Avoid overwriting start and end
             if cell != (1, 1) and cell != (rows - 2, cols - 2):
+                x0, y0, x1, y1 = self.cell_bounds(self.app.maze, r, c)
                 self.canvas.create_rectangle(x0, y0, x1, y1, fill=PALETTE["path"], outline="")
 
         # Re-mark start and end to ensure their colors remain
-        self.canvas.create_rectangle(
-            1 * cell_width, 1 * cell_height, 2 * cell_width, 2 * cell_height, fill=PALETTE["start"], outline=""
-        )
-        self.canvas.create_rectangle(
-            (cols - 2) * cell_width,
-            (rows - 2) * cell_height,
-            (cols - 1) * cell_width,
-            (rows - 1) * cell_height,
-            fill=PALETTE["goal"],
-            outline="",
-        )
+        self.highlight_cell((1, 1), PALETTE["start"], force=True)
+        self.highlight_cell((rows - 2, cols - 2), PALETTE["goal"], force=True)
 
     def mark_visited(self, cell):
-        rows, cols = self.app.maze.shape
-        cell_width = self.canvas.winfo_width() / cols
-        cell_height = self.canvas.winfo_height() / rows
-        r, c = cell
-        x0 = c * cell_width
-        y0 = r * cell_height
-        x1 = x0 + cell_width
-        y1 = y0 + cell_height
-        self.canvas.create_rectangle(x0, y0, x1, y1, fill=PALETTE["visited"], outline="")
+        self.highlight_cell(cell, PALETTE["visited"])
 
     def mark_frontier(self, cell):
-        rows, cols = self.app.maze.shape
-        cell_width = self.canvas.winfo_width() / cols
-        cell_height = self.canvas.winfo_height() / rows
-        r, c = cell
-        x0 = c * cell_width
-        y0 = r * cell_height
-        x1 = x0 + cell_width
-        y1 = y0 + cell_height
-        self.canvas.create_rectangle(x0, y0, x1, y1, fill=PALETTE["frontier"], outline="")
+        self.highlight_cell(cell, PALETTE["frontier"])
 
     def mark_path(self, cell):
-        rows, cols = self.app.maze.shape
-        cell_width = self.canvas.winfo_width() / cols
-        cell_height = self.canvas.winfo_height() / rows
-        r, c = cell
-        x0 = c * cell_width
-        y0 = r * cell_height
-        x1 = x0 + cell_width
-        y1 = y0 + cell_height
-        self.canvas.create_rectangle(x0, y0, x1, y1, fill=PALETTE["path"], outline="")
+        self.highlight_cell(cell, PALETTE["path"])

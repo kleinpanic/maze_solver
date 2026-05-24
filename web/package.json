@@ -1,10 +1,10 @@
 {
   "name": "maze-solver-web",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && cp index.html dist/index.html && cp src/main.js dist/main.js && cp src/hadlock.js dist/hadlock.js && cp src/mazeConnectivity.js dist/mazeConnectivity.js && cp src/mazeStats.js dist/mazeStats.js && cp favicon.svg dist/favicon.svg",
+    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && cp index.html dist/index.html && cp src/main.js dist/main.js && cp src/hadlock.js dist/hadlock.js && cp src/mazeConnectivity.js dist/mazeConnectivity.js && cp src/mazeStats.js dist/mazeStats.js && cp ../src/maze_solver/algorithm_catalog.json dist/algorithm_catalog.json && cp favicon.svg dist/favicon.svg",
     "dev": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
     "test": "node --check src/main.js && node --test tests/*.test.mjs",
     "test:e2e": "npm run build && node tests/webuiSmoke.mjs"

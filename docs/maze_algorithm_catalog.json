@@ -1,0 +1,767 @@
+[
+  {
+    "name": "BFS",
+    "family": "Uninformed search",
+    "status": "implemented",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Complete and optimal on unweighted grids",
+    "reference": "Cormen et al.; classical graph traversal"
+  },
+  {
+    "name": "DFS",
+    "family": "Uninformed search",
+    "status": "implemented",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Complete on finite grids but not shortest-path optimal",
+    "reference": "Classical graph traversal"
+  },
+  {
+    "name": "Uniform-Cost Search",
+    "family": "Weighted shortest path",
+    "status": "implemented",
+    "time": "O((V + E) log V)",
+    "space": "O(V)",
+    "notes": "Dijkstra-style cheapest-first search",
+    "reference": "Russell and Norvig; Dijkstra 1959"
+  },
+  {
+    "name": "Dijkstra",
+    "family": "Weighted shortest path",
+    "status": "implemented",
+    "time": "O((V + E) log V)",
+    "space": "O(V)",
+    "notes": "Shortest paths with non-negative edge weights",
+    "reference": "Dijkstra 1959"
+  },
+  {
+    "name": "A*",
+    "family": "Informed search",
+    "status": "implemented",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Optimal with admissible consistent heuristic",
+    "reference": "Hart, Nilsson, Raphael 1968"
+  },
+  {
+    "name": "Greedy Best-First",
+    "family": "Informed search",
+    "status": "implemented",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Heuristic-only priority, not optimal",
+    "reference": "Classical best-first search"
+  },
+  {
+    "name": "Bidirectional BFS",
+    "family": "Bidirectional search",
+    "status": "implemented",
+    "time": "O(b^(d/2))",
+    "space": "O(b^(d/2))",
+    "notes": "Two unweighted waves meet in the middle",
+    "reference": "Classical bidirectional search"
+  },
+  {
+    "name": "IDDFS",
+    "family": "Iterative deepening",
+    "status": "implemented",
+    "time": "O(b^d)",
+    "space": "O(d)",
+    "notes": "Memory-light complete depth search",
+    "reference": "Korf 1985"
+  },
+  {
+    "name": "IDA*",
+    "family": "Iterative deepening",
+    "status": "implemented",
+    "time": "O(b^d)",
+    "space": "O(d)",
+    "notes": "A* contours with DFS memory use",
+    "reference": "Korf 1985"
+  },
+  {
+    "name": "Bellman-Ford",
+    "family": "Dynamic programming",
+    "status": "implemented",
+    "time": "O(VE)",
+    "space": "O(V)",
+    "notes": "Repeated edge relaxation baseline",
+    "reference": "Bellman 1958; Ford 1956"
+  },
+  {
+    "name": "SPFA",
+    "family": "Queue relaxation",
+    "status": "implemented",
+    "time": "O(VE)",
+    "space": "O(V)",
+    "notes": "Queue-optimized Bellman-Ford variant",
+    "reference": "Moore 1959"
+  },
+  {
+    "name": "Lee",
+    "family": "Wavefront routing",
+    "status": "implemented",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Grid-routing BFS distance wave",
+    "reference": "Lee 1961"
+  },
+  {
+    "name": "Flood Fill",
+    "family": "Distance transform",
+    "status": "implemented",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Goal-distance field used in micromouse routing",
+    "reference": "Micromouse flood-fill literature"
+  },
+  {
+    "name": "Hadlock",
+    "family": "Detour routing",
+    "status": "implemented",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "0-1 detour-number routing on rectilinear grids",
+    "reference": "Hadlock 1977"
+  },
+  {
+    "name": "Dead-End Filling",
+    "family": "Maze reduction",
+    "status": "implemented",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Prunes cul-de-sacs before tracing remaining corridor",
+    "reference": "Classical maze reduction"
+  },
+  {
+    "name": "Left-Hand Rule",
+    "family": "Wall following",
+    "status": "implemented",
+    "time": "O(k)",
+    "space": "O(k)",
+    "notes": "Topology-dependent local wall follower",
+    "reference": "Classical wall-following navigation"
+  },
+  {
+    "name": "Right-Hand Rule",
+    "family": "Wall following",
+    "status": "implemented",
+    "time": "O(k)",
+    "space": "O(k)",
+    "notes": "Mirrored topology-dependent wall follower",
+    "reference": "Classical wall-following navigation"
+  },
+  {
+    "name": "Tremaux",
+    "family": "Passage marking",
+    "status": "implemented",
+    "time": "O(V + E)",
+    "space": "O(V + E)",
+    "notes": "Marks passages to avoid endless loops",
+    "reference": "Charles Pierre Tremaux"
+  },
+  {
+    "name": "Pledge",
+    "family": "Obstacle following",
+    "status": "implemented",
+    "time": "O(k)",
+    "space": "O(k)",
+    "notes": "Preferred heading with turn-sum obstacle escape",
+    "reference": "Classical Pledge algorithm"
+  },
+  {
+    "name": "Random Mouse",
+    "family": "Random walk",
+    "status": "implemented",
+    "time": "Unbounded",
+    "space": "O(k)",
+    "notes": "Random-walk baseline with probabilistic hitting time",
+    "reference": "Random walk baseline"
+  },
+  {
+    "name": "Dial's Algorithm",
+    "family": "Bucket shortest path",
+    "status": "planned",
+    "time": "O(E + C V)",
+    "space": "O(V + C)",
+    "notes": "Integer-weight Dijkstra using buckets",
+    "reference": "Dial 1969"
+  },
+  {
+    "name": "0-1 BFS",
+    "family": "Deque shortest path",
+    "status": "planned",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Deque shortest path for 0/1 edge weights",
+    "reference": "Classical 0-1 shortest path"
+  },
+  {
+    "name": "Theta*",
+    "family": "Any-angle search",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Any-angle paths with line-of-sight relaxation",
+    "reference": "Nash/Daniel/Koenig/Felner 2007"
+  },
+  {
+    "name": "Lazy Theta*",
+    "family": "Any-angle search",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Fewer line-of-sight checks than Theta*",
+    "reference": "Nash/Koenig/Tovey 2010"
+  },
+  {
+    "name": "Field D*",
+    "family": "Any-angle replanning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Interpolation-based continuous-cost grid replanning",
+    "reference": "Ferguson and Stentz"
+  },
+  {
+    "name": "Jump Point Search",
+    "family": "Grid pruning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Symmetry pruning for uniform-cost grids",
+    "reference": "Harabor and Grastien 2011"
+  },
+  {
+    "name": "JPS+",
+    "family": "Grid pruning",
+    "status": "planned",
+    "time": "preprocessed JPS",
+    "space": "O(V)",
+    "notes": "Preprocessed jump points for faster grid search",
+    "reference": "Harabor and Grastien improvements"
+  },
+  {
+    "name": "Rectangular Symmetry Reduction",
+    "family": "Grid pruning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Prunes rectangular grid symmetries",
+    "reference": "Harabor/Botea/Kilby 2011"
+  },
+  {
+    "name": "Fringe Search",
+    "family": "Memory-conscious heuristic",
+    "status": "planned",
+    "time": "O(b^d)",
+    "space": "O(V)",
+    "notes": "Batch-oriented A* alternative for games",
+    "reference": "Bjornsson et al."
+  },
+  {
+    "name": "HPA*",
+    "family": "Hierarchical search",
+    "status": "planned",
+    "time": "abstracted graph dependent",
+    "space": "O(V)",
+    "notes": "Clustered abstraction for large maps",
+    "reference": "Botea/Muller/Schaeffer 2004"
+  },
+  {
+    "name": "D*",
+    "family": "Incremental replanning",
+    "status": "planned",
+    "time": "incremental",
+    "space": "O(V)",
+    "notes": "Dynamic path repair for changing maps",
+    "reference": "Stentz 1994"
+  },
+  {
+    "name": "D* Lite",
+    "family": "Incremental replanning",
+    "status": "planned",
+    "time": "incremental",
+    "space": "O(V)",
+    "notes": "LPA*-based replanning for unknown terrain",
+    "reference": "Koenig and Likhachev 2002"
+  },
+  {
+    "name": "LPA*",
+    "family": "Incremental replanning",
+    "status": "planned",
+    "time": "incremental",
+    "space": "O(V)",
+    "notes": "Reuses prior search after graph-cost changes",
+    "reference": "Koenig/Likhachev"
+  },
+  {
+    "name": "Anytime Repairing A*",
+    "family": "Anytime search",
+    "status": "planned",
+    "time": "anytime bounded",
+    "space": "O(V)",
+    "notes": "Improves paths as time allows",
+    "reference": "Likhachev/Gordon/Thrun 2003"
+  },
+  {
+    "name": "Weighted A*",
+    "family": "Bounded-suboptimal search",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Inflates heuristic for speed at bounded quality",
+    "reference": "Pohl and later heuristic-search literature"
+  },
+  {
+    "name": "Beam Search",
+    "family": "Bounded-memory heuristic",
+    "status": "planned",
+    "time": "O(wd)",
+    "space": "O(w)",
+    "notes": "Keeps only best frontier width, incomplete generally",
+    "reference": "Classical AI search"
+  },
+  {
+    "name": "Hill Climbing",
+    "family": "Local search",
+    "status": "planned",
+    "time": "O(k)",
+    "space": "O(1)",
+    "notes": "Greedy local improvement, trap-prone",
+    "reference": "Classical local search"
+  },
+  {
+    "name": "Bug 1",
+    "family": "Sensor/local robotics",
+    "status": "planned",
+    "time": "O(k)",
+    "space": "O(k)",
+    "notes": "Boundary-following robot navigation baseline",
+    "reference": "Lumelsky/Stepanov bug algorithms"
+  },
+  {
+    "name": "Bug 2",
+    "family": "Sensor/local robotics",
+    "status": "planned",
+    "time": "O(k)",
+    "space": "O(k)",
+    "notes": "M-line obstacle navigation baseline",
+    "reference": "Lumelsky/Stepanov bug algorithms"
+  },
+  {
+    "name": "TangentBug",
+    "family": "Sensor/local robotics",
+    "status": "planned",
+    "time": "sensor dependent",
+    "space": "O(k)",
+    "notes": "Range-sensor local tangent navigation",
+    "reference": "Kamon/Rimon/Rivlin"
+  },
+  {
+    "name": "Potential Field",
+    "family": "Continuous planning",
+    "status": "planned",
+    "time": "iteration dependent",
+    "space": "O(V)",
+    "notes": "Gradient descent over attractive/repulsive field",
+    "reference": "Khatib artificial potential fields"
+  },
+  {
+    "name": "Fast Marching Method",
+    "family": "Continuous planning",
+    "status": "planned",
+    "time": "O(V log V)",
+    "space": "O(V)",
+    "notes": "Eikonal front propagation over grids",
+    "reference": "Sethian fast marching"
+  },
+  {
+    "name": "Fast Sweeping Method",
+    "family": "Continuous planning",
+    "status": "planned",
+    "time": "O(kV)",
+    "space": "O(V)",
+    "notes": "Eikonal solver via directional sweeps",
+    "reference": "Zhao fast sweeping"
+  },
+  {
+    "name": "Value Iteration",
+    "family": "Dynamic programming",
+    "status": "planned",
+    "time": "O(kV)",
+    "space": "O(V)",
+    "notes": "MDP/grid cost-to-go dynamic programming",
+    "reference": "Bellman dynamic programming"
+  },
+  {
+    "name": "Policy Iteration",
+    "family": "Dynamic programming",
+    "status": "planned",
+    "time": "problem dependent",
+    "space": "O(V)",
+    "notes": "Iterates policy evaluation and improvement",
+    "reference": "Howard policy iteration"
+  },
+  {
+    "name": "RRT",
+    "family": "Sampling-based planning",
+    "status": "planned",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Rapidly-exploring random trees for continuous space",
+    "reference": "LaValle 1998"
+  },
+  {
+    "name": "RRT*",
+    "family": "Sampling-based planning",
+    "status": "planned",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Asymptotically optimal RRT variant",
+    "reference": "Karaman and Frazzoli"
+  },
+  {
+    "name": "PRM",
+    "family": "Sampling-based planning",
+    "status": "planned",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Roadmap sampling for repeated queries",
+    "reference": "Kavraki et al."
+  },
+  {
+    "name": "Voronoi Roadmap",
+    "family": "Roadmap planning",
+    "status": "planned",
+    "time": "O(V log V)",
+    "space": "O(V)",
+    "notes": "Obstacle-clearance skeleton navigation",
+    "reference": "Computational geometry roadmap planning"
+  },
+  {
+    "name": "Navigation Mesh A*",
+    "family": "Polygonal planning",
+    "status": "planned",
+    "time": "mesh dependent",
+    "space": "O(V)",
+    "notes": "A* over convex navigation polygons",
+    "reference": "Game AI navigation-mesh literature"
+  },
+  {
+    "name": "Contraction Hierarchies",
+    "family": "Route planning speedup",
+    "status": "planned",
+    "time": "preprocessed",
+    "space": "O(V)",
+    "notes": "Node-ordering speedup for shortest paths",
+    "reference": "Geisberger et al."
+  },
+  {
+    "name": "ALT / A* Landmarks",
+    "family": "Heuristic speedup",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V + landmarks)",
+    "notes": "Landmark triangle-inequality heuristics",
+    "reference": "Goldberg/Harrelson"
+  },
+  {
+    "name": "Hierarchical Dijkstra",
+    "family": "Hierarchical shortest path",
+    "status": "planned",
+    "time": "abstracted graph dependent",
+    "space": "O(V)",
+    "notes": "Multi-level graph abstraction",
+    "reference": "Classical hierarchical routing"
+  },
+  {
+    "name": "Floyd-Warshall",
+    "family": "All-pairs shortest path",
+    "status": "planned",
+    "time": "O(V^3)",
+    "space": "O(V^2)",
+    "notes": "All-pairs dynamic programming baseline for small maze graphs",
+    "reference": "Floyd 1962; Warshall 1962"
+  },
+  {
+    "name": "Johnson's Algorithm",
+    "family": "All-pairs shortest path",
+    "status": "planned",
+    "time": "O(VE log V)",
+    "space": "O(V + E)",
+    "notes": "Sparse all-pairs shortest paths via reweighting and repeated Dijkstra",
+    "reference": "Johnson 1977"
+  },
+  {
+    "name": "DAG Shortest Path",
+    "family": "Acyclic dynamic programming",
+    "status": "planned",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Topological relaxation for acyclic passage graphs or reduced corridor DAGs",
+    "reference": "Classical shortest paths in directed acyclic graphs"
+  },
+  {
+    "name": "Multi-Source BFS",
+    "family": "Wavefront routing",
+    "status": "planned",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Several simultaneous sources produce nearest-source distance fields",
+    "reference": "Classical breadth-first search variant"
+  },
+  {
+    "name": "Reverse BFS",
+    "family": "Wavefront routing",
+    "status": "planned",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Runs from the goal to expose predecessor gradients for every start",
+    "reference": "Classical breadth-first search variant"
+  },
+  {
+    "name": "Brushfire Distance Transform",
+    "family": "Distance transform",
+    "status": "planned",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Obstacle or goal wavefront labels cells by discrete distance",
+    "reference": "Classical grid distance-transform planning"
+  },
+  {
+    "name": "Perimeter Search",
+    "family": "Heuristic search",
+    "status": "planned",
+    "time": "O(b^d)",
+    "space": "O(b^(d/2))",
+    "notes": "Precomputes a search perimeter near the goal for later forward search",
+    "reference": "Dillenburg and Nelson perimeter search"
+  },
+  {
+    "name": "Recursive Best-First Search",
+    "family": "Memory-bounded heuristic",
+    "status": "planned",
+    "time": "O(b^d)",
+    "space": "O(d)",
+    "notes": "A* style best-first behavior with linear memory recursion",
+    "reference": "Korf recursive best-first search"
+  },
+  {
+    "name": "SMA*",
+    "family": "Memory-bounded heuristic",
+    "status": "planned",
+    "time": "memory dependent",
+    "space": "O(M)",
+    "notes": "Simplified memory-bounded A* retains the best frontier allowed by memory",
+    "reference": "Russell memory-bounded heuristic search"
+  },
+  {
+    "name": "MM Bidirectional Search",
+    "family": "Bidirectional heuristic search",
+    "status": "planned",
+    "time": "O(b^(d/2))",
+    "space": "O(b^(d/2))",
+    "notes": "Meets in the middle with heuristic guarantees about expansion depth",
+    "reference": "Holte et al. MM bidirectional heuristic search"
+  },
+  {
+    "name": "Near-Optimal Bidirectional Search",
+    "family": "Bidirectional heuristic search",
+    "status": "planned",
+    "time": "instance dependent",
+    "space": "O(V)",
+    "notes": "Chooses front-to-front expansions to approach minimum necessary work",
+    "reference": "Chen et al. NBS"
+  },
+  {
+    "name": "Front-to-Front Bidirectional A*",
+    "family": "Bidirectional heuristic search",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Heuristic estimates are evaluated between opposite frontier nodes",
+    "reference": "Classical front-to-front bidirectional heuristic search"
+  },
+  {
+    "name": "ANYA",
+    "family": "Any-angle search",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Interval-based optimal any-angle search on grids",
+    "reference": "Harabor and Grastien ANYA"
+  },
+  {
+    "name": "Block A*",
+    "family": "Grid pruning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Uses precomputed local block distances to accelerate grid A*",
+    "reference": "Yap et al. Block A*"
+  },
+  {
+    "name": "Subgoal Graphs",
+    "family": "Grid pruning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Precomputed turning subgoals shorten online grid search",
+    "reference": "Uras and Koenig subgoal graphs"
+  },
+  {
+    "name": "Swamps Pruning",
+    "family": "Grid pruning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Identifies regions irrelevant to particular start-goal pairs",
+    "reference": "Pochter et al. swamp pruning"
+  },
+  {
+    "name": "Corridor Graph Reduction",
+    "family": "Maze reduction",
+    "status": "planned",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Contracts degree-two corridor chains into weighted junction edges",
+    "reference": "Classical graph contraction for maze and road networks"
+  },
+  {
+    "name": "Junction Graph Search",
+    "family": "Maze reduction",
+    "status": "planned",
+    "time": "O(J + C)",
+    "space": "O(J)",
+    "notes": "Searches only junctions, endpoints, and corridor segments",
+    "reference": "Classical topological maze graph abstraction"
+  },
+  {
+    "name": "Ariadne's Thread",
+    "family": "Passage marking",
+    "status": "planned",
+    "time": "O(V + E)",
+    "space": "O(V)",
+    "notes": "Backtracking path-marking method related to Tremaux-style navigation",
+    "reference": "Classical maze path-marking method"
+  },
+  {
+    "name": "Medial-Axis Routing",
+    "family": "Skeleton planning",
+    "status": "planned",
+    "time": "O(V log V)",
+    "space": "O(V)",
+    "notes": "Routes over a skeleton that maximizes obstacle clearance",
+    "reference": "Computational geometry skeleton planning"
+  },
+  {
+    "name": "Dynamic Window Approach",
+    "family": "Local robotics",
+    "status": "planned",
+    "time": "O(S)",
+    "space": "O(S)",
+    "notes": "Samples feasible robot velocities for local collision-free progress",
+    "reference": "Fox, Burgard, Thrun dynamic window approach"
+  },
+  {
+    "name": "Hybrid A*",
+    "family": "Kinodynamic planning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "A* over discretized pose states for nonholonomic motion",
+    "reference": "Dolgov et al. practical search techniques"
+  },
+  {
+    "name": "Lattice Planner",
+    "family": "Kinodynamic planning",
+    "status": "planned",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Searches a motion-primitive lattice embedded in the plane",
+    "reference": "Pivtoraiko/Kelly lattice planning"
+  },
+  {
+    "name": "BIT*",
+    "family": "Sampling-based planning",
+    "status": "planned",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Batch informed tree search for asymptotically optimal planning",
+    "reference": "Gammell et al. BIT*"
+  },
+  {
+    "name": "Informed RRT*",
+    "family": "Sampling-based planning",
+    "status": "planned",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Restricts RRT* sampling to an improving informed subset after a solution",
+    "reference": "Gammell et al. Informed RRT*"
+  },
+  {
+    "name": "Ant Colony Optimization",
+    "family": "Metaheuristic",
+    "status": "planned",
+    "time": "O(iterations * ants * E)",
+    "space": "O(E)",
+    "notes": "Pheromone-guided stochastic route optimization over maze edges",
+    "reference": "Dorigo ant colony optimization"
+  },
+  {
+    "name": "Genetic Algorithm",
+    "family": "Metaheuristic",
+    "status": "planned",
+    "time": "O(generations * population * fitness)",
+    "space": "O(population)",
+    "notes": "Evolves encoded candidate paths with selection and mutation",
+    "reference": "Classical evolutionary computation"
+  },
+  {
+    "name": "Simulated Annealing",
+    "family": "Metaheuristic",
+    "status": "planned",
+    "time": "O(iterations)",
+    "space": "O(1)",
+    "notes": "Stochastic local search accepts occasional worse moves while cooling",
+    "reference": "Kirkpatrick et al. simulated annealing"
+  },
+  {
+    "name": "Tabu Search",
+    "family": "Metaheuristic",
+    "status": "planned",
+    "time": "O(iterations * neighborhood)",
+    "space": "O(tabu)",
+    "notes": "Local search with short-term memory to avoid cycling",
+    "reference": "Glover tabu search"
+  },
+  {
+    "name": "Q-Learning Grid Solver",
+    "family": "Reinforcement learning",
+    "status": "planned",
+    "time": "O(episodes * steps)",
+    "space": "O(VA)",
+    "notes": "Learns state-action values for grid navigation rewards",
+    "reference": "Watkins Q-learning"
+  },
+  {
+    "name": "SAT Path Encoding",
+    "family": "Constraint solving",
+    "status": "planned",
+    "time": "solver dependent",
+    "space": "solver dependent",
+    "notes": "Encodes bounded path existence as Boolean satisfiability",
+    "reference": "Classical SAT planning encodings"
+  },
+  {
+    "name": "Integer Linear Programming",
+    "family": "Optimization",
+    "status": "planned",
+    "time": "solver dependent",
+    "space": "solver dependent",
+    "notes": "Solves maze paths as flow or shortest-path linear constraints",
+    "reference": "Classical network-flow optimization"
+  }
+]
