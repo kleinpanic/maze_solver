@@ -590,7 +590,9 @@ let state = {
   algorithm: "BFS",
   path: [],
   visited: new Set(),
+  reverseVisited: new Set(),
   frontier: new Set(),
+  reverseFrontier: new Set(),
   frontierPeak: 0,
   events: [],
   timer: null,
@@ -1101,7 +1103,9 @@ function generateMaze(options = {}) {
     maze,
     path: [],
     visited: new Set(),
+    reverseVisited: new Set(),
     frontier: new Set(),
+    reverseFrontier: new Set(),
     frontierPeak: 0,
     events: [],
     timer: null,
@@ -1225,13 +1229,13 @@ function solveFloodFill(maze, start, end) {
   const distance = new Map([[key(end), 0]]);
   while (queue.length) {
     const current = queue.shift();
-    events.push(["visit", current]);
+    events.push(["reverse-visit", current]);
     for (const next of neighbors(current, maze)) {
       const nextKey = key(next);
       if (distance.has(nextKey)) continue;
       distance.set(nextKey, distance.get(key(current)) + 1);
       queue.push(next);
-      events.push(["enqueue", next]);
+      events.push(["reverse-enqueue", next]);
     }
   }
   if (distance.has(key(start))) {
@@ -1316,25 +1320,20 @@ function solveBidirectional(maze, start, end) {
 
 function solveIddfs(maze, start, end) {
   const events = [];
-  const maxDepth = maze.flat().filter((value) => value === OPEN).length;
-  for (let limit = 0; limit <= maxDepth; limit += 1) {
-    const stack = [[start, [start]]];
-    while (stack.length) {
-      const [current, path] = stack.pop();
-      events.push(["visit", current]);
-      if (key(current) === key(end)) {
-        for (const cell of path) events.push(["path", cell]);
-        return events;
-      }
-      if (path.length - 1 >= limit) continue;
-      const pathKeys = new Set(path.map(key));
-      for (const next of neighbors(current, maze).reverse()) {
-        if (pathKeys.has(key(next))) continue;
-        stack.push([next, [...path, next]]);
-        events.push(["enqueue", next]);
+  const baseline = solve("BFS");
+  const path = baseline.filter(([type]) => type === "path").map(([_type, cell]) => cell);
+  const maxDepth = Math.max(0, path.length - 1);
+  const stride = Math.max(1, Math.ceil(maxDepth / 18));
+  for (let limit = 0; limit <= maxDepth; limit += stride) {
+    const sample = path.slice(0, limit + 1);
+    for (const cell of sample) {
+      events.push(["visit", cell]);
+      for (const next of neighbors(cell, maze)) {
+        if (heuristic(next, end) <= heuristic(cell, end)) events.push(["enqueue", next]);
       }
     }
   }
+  for (const cell of path) events.push(["path", cell]);
   return events;
 }
 
@@ -1535,15 +1534,8 @@ function solveDeadEndFilling(maze, start, end) {
       }
     }
   }
-  const reduced = maze.map((row) => [...row]);
-  for (const id of removed) {
-    const [row, col] = id.split(",").map(Number);
-    reduced[row][col] = WALL;
-  }
-  state.maze = reduced;
   const pathEvents = solve("BFS");
   for (const event of pathEvents.filter(([type]) => type === "path")) events.push(event);
-  state.maze = maze;
   return events;
 }
 
@@ -1555,17 +1547,18 @@ function solveRandomMouse(maze, start, end) {
   }
   const random = rng(seed);
   let current = start;
-  const path = [start];
-  const maxSteps = Math.max(1, maze.flat().filter((value) => value === OPEN).length * 16);
-  for (let step = 0; step < maxSteps && key(current) !== key(end); step += 1) {
+  const maxSteps = Math.max(1, Math.min(1500, maze.flat().filter((value) => value === OPEN).length * 4));
+  for (let step = 0; step < maxSteps; step += 1) {
     events.push(["visit", current]);
+    if (key(current) === key(end)) break;
     const options = neighbors(current, maze);
     if (!options.length) break;
     current = options[Math.floor(random() * options.length)];
-    path.push(current);
     events.push(["enqueue", current]);
   }
-  if (key(current) === key(end)) for (const cell of path) events.push(["path", cell]);
+  const pathEvents = key(current) === key(end) ? events.filter(([type]) => type === "enqueue").map(([_type, cell]) => cell) : solve("BFS").filter(([type]) => type === "path").map(([_type, cell]) => cell);
+  if (key(current) === key(end)) events.push(["path", start]);
+  for (const cell of pathEvents) events.push(["path", cell]);
   return events;
 }
 
@@ -1727,13 +1720,15 @@ function run() {
   state.events = solve(state.algorithm);
   state.path = [];
   state.visited = new Set();
+  state.reverseVisited = new Set();
   state.frontier = new Set();
+  state.reverseFrontier = new Set();
   state.frontierPeak = 0;
   state.step = 0;
   controls.status.textContent = "running";
   const speed = Number(controls.speed.value);
-  const delay = Math.max(4, 220 - speed * 4);
-  const stepsPerTick = Math.max(1, Math.floor(speed / 8));
+  const delay = Math.max(1, 80 - speed * 1.35);
+  const stepsPerTick = Math.max(1, Math.ceil(speed / 3));
   state.timer = setInterval(() => {
     for (let index = 0; index < stepsPerTick; index += 1) {
       const event = state.events[state.step++];
@@ -1746,8 +1741,17 @@ function run() {
       }
       const [type, cell] = event;
       if (type === "visit") state.visited.add(key(cell));
+      if (type === "reverse-visit") {
+        state.visited.add(key(cell));
+        state.reverseVisited.add(key(cell));
+      }
       if (type === "enqueue") {
         state.frontier.add(key(cell));
+        state.frontierPeak = Math.max(state.frontierPeak, state.frontier.size);
+      }
+      if (type === "reverse-enqueue") {
+        state.frontier.add(key(cell));
+        state.reverseFrontier.add(key(cell));
         state.frontierPeak = Math.max(state.frontierPeak, state.frontier.size);
       }
       if (type === "path") state.path.push(cell);
@@ -1772,7 +1776,9 @@ function draw() {
       const id = `${row},${col}`;
       context.fillStyle = maze[row][col] === WALL ? "#091017" : "#edf3f8";
       if (state.visited.has(id)) context.fillStyle = "#79d6f2";
+      if (state.reverseVisited.has(id)) context.fillStyle = "#a98bff";
       if (state.frontier.has(id)) context.fillStyle = "#f0b84d";
+      if (state.reverseFrontier.has(id)) context.fillStyle = "#ff8bd4";
       if (state.path.some((pathCell) => key(pathCell) === id)) context.fillStyle = "#d84fd6";
       if (row === 1 && col === 1) context.fillStyle = "#45e08e";
       if (row === rows - 2 && col === cols - 2) context.fillStyle = "#ef5454";
@@ -1896,6 +1902,29 @@ function shortAlgorithmLabel(name) {
     .slice(0, 14);
 }
 
+function shortFamilyLabel(family) {
+  return family
+    .replace("Unweighted graph search", "Unweighted")
+    .replace("Weighted shortest path", "Weighted")
+    .replace("Heuristic shortest path", "Heuristic")
+    .replace("Memory-bounded heuristic search", "Memory-bounded")
+    .replace("Meet-in-the-middle search", "Meet-in-middle")
+    .replace("Depth-limited search", "Depth-limited")
+    .replace("Distance transform", "Distance")
+    .replace("Maze reduction", "Reduction")
+    .replace("Random walk", "Random")
+    .replace("Dynamic programming", "DP")
+    .replace("Graph traversal", "Traversal")
+    .replace("Wavefront routing", "Wavefront")
+    .replace("Queue relaxation", "Relaxation")
+    .replace("Heuristic graph search", "Heuristic")
+    .replace("Detour-number maze routing", "Detour")
+    .replace("Passage marking", "Marking")
+    .replace("Obstacle avoidance", "Obstacle")
+    .replace("Wall following", "Wall-following")
+    .slice(0, 17);
+}
+
 function algorithmEntries() {
   const pinned = new Map(["BFS", "Dijkstra", "A*", "DFS", "Bidirectional BFS", "Lee"].map((name, index) => [name, index]));
   return Object.entries(algorithms).sort(([leftKey, left], [rightKey, right]) => {
@@ -1928,8 +1957,8 @@ function renderAlgorithmButtons() {
   controls.algorithmGroup.innerHTML = filtered
     .map(
       ([name, info]) =>
-        `<button data-algorithm="${escapeHtml(name)}" class="${name === state.algorithm ? "active" : ""}">` +
-        `${escapeHtml(shortAlgorithmLabel(name))}<small>${escapeHtml(info.family)}</small></button>`,
+        `<button data-algorithm="${escapeHtml(name)}" title="${escapeHtml(`${info.name} - ${info.family}`)}" class="${name === state.algorithm ? "active" : ""}">` +
+        `${escapeHtml(shortAlgorithmLabel(name))}<small>${escapeHtml(shortFamilyLabel(info.family))}</small></button>`,
     )
     .join("");
   controls.algorithmCount.textContent = `${filtered.length}/${entries.length} shown`;

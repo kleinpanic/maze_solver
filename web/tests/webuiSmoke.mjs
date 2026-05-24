@@ -71,6 +71,11 @@ try {
   assert.equal(await page.locator("#rows").inputValue(), "41");
   assert.equal(await page.locator("#cols").inputValue(), "61");
   assert.equal(await page.locator("#speed").inputValue(), "44");
+  assert.equal(await page.locator(".trace-legend").count(), 1);
+  const clippedButtons = await page.$$eval("[data-algorithm]", (buttons) =>
+    buttons.filter((button) => button.scrollHeight > button.clientHeight + 1 || button.scrollWidth > button.clientWidth + 1).length,
+  );
+  assert.equal(clippedButtons, 0);
   await page.fill("#rows", "21");
   await page.fill("#cols", "25");
   await page.evaluate(() => {
@@ -105,7 +110,24 @@ try {
     assert.ok(openCells >= pathLength);
   }
 
-  for (const algorithm of ["Theta*", "Jump Point Search", "D* Lite", "RRT*", "Ant Colony Optimization", "SAT Path Encoding"]) {
+  for (const algorithm of [
+    "Flood Fill",
+    "IDDFS",
+    "Dead-End Filling",
+    "Random Mouse",
+    "Reverse BFS",
+    "Field D*",
+    "Potential Field",
+    "Fast Sweeping Method",
+    "Value Iteration",
+    "Policy Iteration",
+    "Theta*",
+    "Jump Point Search",
+    "D* Lite",
+    "RRT*",
+    "Ant Colony Optimization",
+    "SAT Path Encoding",
+  ]) {
     await page.click(`[data-algorithm="${algorithm}"]`);
     await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
       timeout: 15_000,
@@ -113,6 +135,22 @@ try {
     const pathLength = Number(await page.locator("#pathLength").innerText());
     assert.ok(pathLength > 0);
   }
+  await page.click('[data-algorithm="Flood Fill"]');
+  await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
+    timeout: 15_000,
+  });
+  const reversePixels = await page.evaluate(() => {
+    const canvas = document.querySelector("#mazeCanvas");
+    const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let count = 0;
+    for (let index = 0; index < data.length; index += 4) {
+      const purple = data[index] === 169 && data[index + 1] === 139 && data[index + 2] === 255;
+      const pink = data[index] === 255 && data[index + 1] === 139 && data[index + 2] === 212;
+      if (purple || pink) count += 1;
+    }
+    return count;
+  });
+  assert.ok(reversePixels > 0);
   await page.click('[data-algorithm="SAT Path Encoding"]');
   await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
     timeout: 15_000,

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.12
+
+- Added distinct goal-origin trace coloring for reverse wave solvers and their
+  projected catalog variants.
+- Bounded IDDFS animation work so the browser stays responsive on museum-size
+  mazes.
+- Reworked Dead-End Filling and Random Mouse rendering so they keep the maze
+  stable while still showing a valid solution path.
+- Tightened solver button labels and speed stepping for cleaner interaction.
+
 ## 0.2.11
 
 - Added searchable and family-filtered WebUI solver browsing so the full
