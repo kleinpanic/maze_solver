@@ -56,6 +56,8 @@ try {
   await page.waitForFunction(() => document.querySelector("#roadmapSummary")?.textContent.includes("implemented/tracked"));
   const roadmapRows = await page.locator(".roadmap-row").count();
   assert.ok(roadmapRows >= 80, "algorithm roadmap should track a broad 2D solver catalog");
+  const solverButtons = await page.locator("[data-algorithm]").count();
+  assert.ok(solverButtons >= 80, "roadmap algorithms should be exposed as runnable solver buttons");
   await page.fill("#rows", "21");
   await page.fill("#cols", "25");
   await page.evaluate(() => {
@@ -89,6 +91,15 @@ try {
     const openCells = Number(await page.locator("#openCells").innerText());
     assert.ok(pathLength > 0, `${generator} should produce a BFS path`);
     assert.ok(openCells >= pathLength, `${generator} open cells should cover its path`);
+  }
+
+  for (const algorithm of ["Theta*", "Jump Point Search", "D* Lite", "RRT*", "Ant Colony Optimization", "SAT Path Encoding"]) {
+    await page.click(`[data-algorithm="${algorithm}"]`);
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
+      timeout: 15_000,
+    });
+    const pathLength = Number(await page.locator("#pathLength").innerText());
+    assert.ok(pathLength > 0, `${algorithm} should render a real path`);
   }
 
   await screenshot(page, "webui-smoke-desktop.png");

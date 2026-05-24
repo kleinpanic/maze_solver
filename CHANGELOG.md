@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.7
+
+- Converted the full 85-entry algorithm catalog from planned coverage to implemented runnable renditions across Python, GUI/TUI selection, and the WebUI solver gallery.
+- Added projected finite-grid adapters for any-angle, grid-pruning, incremental replanning, sampling, robotics, metaheuristic, and constraint-solving families so every catalog entry produces an actual maze trace.
+- Updated catalog tests to assert every catalog algorithm has a runnable solver and returns a valid path on a solvable maze.
+- Expanded WebUI solver controls from the original 20 buttons to the full catalog, with representative Playwright coverage for newly implemented families.
+
 ## 0.2.6
 
 - Added an 85-entry machine-readable 2D maze/path-planning algorithm roadmap and tests that enforce catalog breadth plus implemented solver parity.

@@ -136,6 +136,9 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .segments button {

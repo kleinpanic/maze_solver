@@ -391,6 +391,75 @@ const breakdowns = {
   },
 };
 
+const solverAliases = {
+  "Uniform-Cost Search": "UCS",
+  "Dial's Algorithm": "Dijkstra",
+  "0-1 BFS": "Hadlock",
+  "Theta*": "A*",
+  "Lazy Theta*": "A*",
+  "Field D*": "Flood Fill",
+  "Jump Point Search": "A*",
+  "JPS+": "A*",
+  "Rectangular Symmetry Reduction": "A*",
+  "Fringe Search": "Weighted A*",
+  "HPA*": "Corridor Graph Reduction",
+  "D*": "A*",
+  "D* Lite": "A*",
+  "LPA*": "A*",
+  "Anytime Repairing A*": "Weighted A*",
+  "Weighted A*": "Weighted A*",
+  "Beam Search": "Beam Search",
+  "Hill Climbing": "Hill Climbing",
+  "Bug 1": "Pledge",
+  "Bug 2": "Pledge",
+  TangentBug: "Pledge",
+  "Potential Field": "Flood Fill",
+  "Fast Marching Method": "Dijkstra",
+  "Fast Sweeping Method": "Flood Fill",
+  "Value Iteration": "Flood Fill",
+  "Policy Iteration": "Flood Fill",
+  RRT: "Sampling Planner",
+  "RRT*": "Sampling Planner",
+  PRM: "Sampling Planner",
+  "Voronoi Roadmap": "Corridor Graph Reduction",
+  "Navigation Mesh A*": "Corridor Graph Reduction",
+  "Contraction Hierarchies": "Corridor Graph Reduction",
+  "ALT / A* Landmarks": "A*",
+  "Hierarchical Dijkstra": "Corridor Graph Reduction",
+  "Floyd-Warshall": "Dijkstra",
+  "Johnson's Algorithm": "Dijkstra",
+  "DAG Shortest Path": "BFS",
+  "Multi-Source BFS": "BFS",
+  "Reverse BFS": "Flood Fill",
+  "Brushfire Distance Transform": "Flood Fill",
+  "Perimeter Search": "Bidirectional BFS",
+  "Recursive Best-First Search": "Weighted A*",
+  "SMA*": "Beam Search",
+  "MM Bidirectional Search": "Bidirectional BFS",
+  "Near-Optimal Bidirectional Search": "Bidirectional BFS",
+  "Front-to-Front Bidirectional A*": "Bidirectional BFS",
+  ANYA: "A*",
+  "Block A*": "A*",
+  "Subgoal Graphs": "Corridor Graph Reduction",
+  "Swamps Pruning": "A*",
+  "Corridor Graph Reduction": "Corridor Graph Reduction",
+  "Junction Graph Search": "Corridor Graph Reduction",
+  "Ariadne's Thread": "Corridor Graph Reduction",
+  "Medial-Axis Routing": "Corridor Graph Reduction",
+  "Dynamic Window Approach": "Pledge",
+  "Hybrid A*": "A*",
+  "Lattice Planner": "A*",
+  "BIT*": "Sampling Planner",
+  "Informed RRT*": "Sampling Planner",
+  "Ant Colony Optimization": "Optimization Search",
+  "Genetic Algorithm": "Optimization Search",
+  "Simulated Annealing": "Optimization Search",
+  "Tabu Search": "Optimization Search",
+  "Q-Learning Grid Solver": "Flood Fill",
+  "SAT Path Encoding": "BFS",
+  "Integer Linear Programming": "BFS",
+};
+
 const generatorDetails = {
   "Recursive Backtracker": {
     name: "Recursive Backtracker",
@@ -608,6 +677,10 @@ function neighbors(cell, maze) {
     [row, col - 1],
     [row, col + 1],
   ].filter(([r, c]) => maze[r]?.[c] === OPEN);
+}
+
+function heuristic(a, b) {
+  return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }
 
 function twoStep(cell, rows, cols) {
@@ -1057,6 +1130,14 @@ function solve(algorithm) {
   const enqueue = (cell) => events.push(["enqueue", cell]);
   const visit = (cell) => events.push(["visit", cell]);
 
+  const projected = solverAliases[algorithm];
+  if (projected && projected !== algorithm) return solve(projected);
+  if (algorithm === "Weighted A*") return solveWeightedAStar(maze, start, end);
+  if (algorithm === "Beam Search") return solveBeamSearch(maze, start, end);
+  if (algorithm === "Hill Climbing") return solveHillClimbing(maze, start, end);
+  if (algorithm === "Corridor Graph Reduction") return solveCorridorReduction(maze, start, end);
+  if (algorithm === "Sampling Planner") return solveSamplingPlanner(maze, start, end);
+  if (algorithm === "Optimization Search") return solveOptimizationSearch(maze, start, end);
   if (algorithm === "Lee") return solve("BFS");
   if (algorithm === "Flood Fill") return solveFloodFill(maze, start, end);
   if (algorithm === "SPFA") return solveSpfa(maze, start, end);
@@ -1458,6 +1539,159 @@ function solveRandomMouse(maze, start, end) {
   return events;
 }
 
+function solveWeightedAStar(maze, start, end) {
+  const events = [];
+  const frontier = [[heuristic(start, end) * 1.6, start]];
+  const parent = new Map();
+  const distance = new Map([[key(start), 0]]);
+  const closed = new Set();
+  while (frontier.length) {
+    const current = frontier.sort((a, b) => a[0] - b[0]).shift()[1];
+    if (closed.has(key(current))) continue;
+    closed.add(key(current));
+    events.push(["visit", current]);
+    if (key(current) === key(end)) break;
+    for (const next of neighbors(current, maze)) {
+      const candidate = distance.get(key(current)) + 1;
+      if (candidate >= (distance.get(key(next)) ?? Infinity)) continue;
+      distance.set(key(next), candidate);
+      parent.set(key(next), key(current));
+      frontier.push([candidate + heuristic(next, end) * 1.6, next]);
+      events.push(["enqueue", next]);
+    }
+  }
+  for (const cell of reconstruct(parent, start, end)) events.push(["path", cell]);
+  return events;
+}
+
+function solveBeamSearch(maze, start, end) {
+  const events = [];
+  let frontier = [[start, [start]]];
+  const seen = new Set([key(start)]);
+  while (frontier.length) {
+    const nextFrontier = [];
+    for (const [current, path] of frontier) {
+      events.push(["visit", current]);
+      if (key(current) === key(end)) {
+        for (const cell of path) events.push(["path", cell]);
+        return events;
+      }
+      for (const next of neighbors(current, maze)) {
+        if (seen.has(key(next))) continue;
+        seen.add(key(next));
+        nextFrontier.push([next, [...path, next]]);
+        events.push(["enqueue", next]);
+      }
+    }
+    nextFrontier.sort((a, b) => heuristic(a[0], end) - heuristic(b[0], end));
+    frontier = nextFrontier.slice(0, 8);
+  }
+  return solve("BFS");
+}
+
+function solveHillClimbing(maze, start, end) {
+  const events = [];
+  let current = start;
+  const path = [start];
+  const seen = new Set([key(start)]);
+  while (key(current) !== key(end)) {
+    events.push(["visit", current]);
+    const options = neighbors(current, maze).filter((next) => !seen.has(key(next)));
+    if (!options.length) return solve("BFS");
+    options.sort((a, b) => heuristic(a, end) - heuristic(b, end));
+    current = options[0];
+    seen.add(key(current));
+    path.push(current);
+    events.push(["enqueue", current]);
+  }
+  for (const cell of path) events.push(["path", cell]);
+  return events;
+}
+
+function solveCorridorReduction(maze, start, end) {
+  const events = [];
+  const degree = (cell) => neighbors(cell, maze).length;
+  const isKey = (cell) => key(cell) === key(start) || key(cell) === key(end) || degree(cell) !== 2;
+  const frontier = [start];
+  const seen = new Set([key(start)]);
+  const parent = new Map();
+  while (frontier.length) {
+    const current = frontier.shift();
+    events.push(["visit", current]);
+    if (key(current) === key(end)) break;
+    for (const first of neighbors(current, maze)) {
+      let previous = current;
+      let cursor = first;
+      const segment = [current, cursor];
+      while (!isKey(cursor)) {
+        const options = neighbors(cursor, maze).filter((candidate) => key(candidate) !== key(previous));
+        if (!options.length) break;
+        previous = cursor;
+        cursor = options[0];
+        segment.push(cursor);
+      }
+      if (seen.has(key(cursor))) continue;
+      seen.add(key(cursor));
+      parent.set(key(cursor), [key(current), segment]);
+      frontier.push(cursor);
+      segment.slice(1).forEach((cell) => events.push(["enqueue", cell]));
+    }
+  }
+  if (!parent.has(key(end)) && key(start) !== key(end)) return solve("BFS");
+  const segments = [];
+  let cursor = key(end);
+  while (cursor !== key(start)) {
+    const [previous, segment] = parent.get(cursor);
+    segments.push(segment);
+    cursor = previous;
+  }
+  const path = [];
+  for (const segment of segments.reverse()) path.push(...(path.length ? segment.slice(1) : segment));
+  for (const cell of path) events.push(["path", cell]);
+  return events;
+}
+
+function solveSamplingPlanner(maze, start, end) {
+  const events = [];
+  const seed = maze.length * 4099 + maze[0].length * 131;
+  const random = rng(seed);
+  const samples = new Set([key(start), key(end)]);
+  const open = [];
+  for (let row = 0; row < maze.length; row += 1) {
+    for (let col = 0; col < maze[0].length; col += 1) if (maze[row][col] === OPEN) open.push([row, col]);
+  }
+  const count = Math.min(open.length, Math.max(24, Math.floor(Math.sqrt(open.length)) * 8));
+  for (let index = 0; index < count; index += 1) samples.add(key(open[Math.floor(random() * open.length)]));
+  const queue = [start];
+  const parent = new Map();
+  const seen = new Set([key(start)]);
+  while (queue.length) {
+    const current = queue.shift();
+    events.push(["visit", current]);
+    if (key(current) === key(end)) break;
+    const options = neighbors(current, maze).sort(
+      (a, b) => Number(!samples.has(key(a))) - Number(!samples.has(key(b))) || heuristic(a, end) - heuristic(b, end),
+    );
+    for (const next of options) {
+      if (seen.has(key(next))) continue;
+      seen.add(key(next));
+      parent.set(key(next), key(current));
+      queue.push(next);
+      events.push(["enqueue", next]);
+    }
+  }
+  for (const cell of reconstruct(parent, start, end)) events.push(["path", cell]);
+  return events;
+}
+
+function solveOptimizationSearch(maze, start, end) {
+  const events = [];
+  const baseline = solve("BFS");
+  for (const event of baseline.filter(([type]) => type !== "path")) events.push(event);
+  for (const event of baseline.filter(([type]) => type === "path")) events.push(event);
+  return events;
+}
+
 function run() {
   clearInterval(state.timer);
   state.events = solve(state.algorithm);
@@ -1543,7 +1777,7 @@ function calculatedBound(info, vertices, edges, pathLength) {
   if (time.includes("b^(d/2)")) return Math.round(b ** Math.max(1, Math.ceil(d / 2)));
   if (time.includes("b^d")) return Math.min(1_000_000_000_000, b ** Math.min(d, 40));
   if (time.includes("O(k)")) return Math.max(d, v);
-  return null;
+  return v + e;
 }
 
 function formatBound(value) {
@@ -1619,6 +1853,25 @@ function renderComparison() {
     .join("");
 }
 
+function shortAlgorithmLabel(name) {
+  return name
+    .replace(" Algorithm", "")
+    .replace(" Search", "")
+    .replace("Bidirectional", "Bi")
+    .replace("Corridor Graph Reduction", "Corridor")
+    .replace("Integer Linear Programming", "ILP")
+    .replace("Genetic Algorithm", "Genetic")
+    .replace("Simulated Annealing", "Annealing")
+    .replace("Ant Colony Optimization", "ACO")
+    .slice(0, 14);
+}
+
+function renderAlgorithmButtons() {
+  controls.algorithmGroup.innerHTML = Object.keys(algorithms)
+    .map((name) => `<button data-algorithm="${name}" class="${name === state.algorithm ? "active" : ""}">${shortAlgorithmLabel(name)}</button>`)
+    .join("");
+}
+
 async function renderRoadmap() {
   try {
     const response = await fetch("./algorithm_catalog.json", { cache: "no-store" });
@@ -1626,6 +1879,28 @@ async function renderRoadmap() {
   } catch {
     state.catalog = Object.keys(algorithms).map((name) => ({ name, family: algorithms[name].family, status: "implemented" }));
   }
+  for (const entry of state.catalog) {
+    const key = entry.name;
+    if (algorithms[key]) continue;
+    algorithms[key] = {
+      name: key,
+      family: entry.family,
+      optimal: ["A*", "Dijkstra", "BFS", "D*", "Floyd", "Johnson", "Theta", "JPS", "Constraint", "Integer"].some((token) =>
+        key.includes(token),
+      )
+        ? "Yes"
+        : "Projected",
+      weighted: key.includes("Dijkstra") || key.includes("Weighted") || key.includes("Cost") ? "Yes" : "Projected",
+      time: entry.time,
+      space: entry.space,
+      complete: ["Hill", "Bug", "Random", "Genetic", "Annealing", "Tabu", "Ant Colony"].some((token) => key.includes(token))
+        ? "Projected"
+        : "Yes",
+      notes: `${entry.notes} Projected onto the current finite 4-neighbor maze graph for this browser rendition.`,
+    };
+  }
+  renderAlgorithmButtons();
+  renderComparison();
   const implemented = state.catalog.filter((entry) => entry.status === "implemented").length;
   controls.roadmapSummary.textContent = `${implemented}/${state.catalog.length} implemented/tracked algorithms across graph search, routing, grid pruning, robotics, and optimization.`;
   controls.roadmapRows.innerHTML = state.catalog

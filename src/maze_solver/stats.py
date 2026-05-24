@@ -114,7 +114,7 @@ def complexity_score(info: AlgorithmInfo, maze_stats: MazeStats, path_depth: int
         return min(10**12, branching ** min(depth, 40))
     if "O(k)" in time:
         return max(depth, v)
-    return None
+    return v + e
 
 
 def format_complexity_score(score: int | None) -> str:

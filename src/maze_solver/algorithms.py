@@ -11,6 +11,7 @@ from typing import Literal
 
 import numpy as np
 
+from maze_solver.catalog import algorithm_catalog
 from maze_solver.grid import Cell, adjacent_cells
 
 Action = Literal["visit", "enqueue", "path", "done"]
@@ -933,6 +934,406 @@ def heuristic(a: Cell, b: Cell) -> int:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
+def weighted_a_star_generator(
+    maze: np.ndarray, start: Cell, end: Cell, weight_multiplier: float = 1.6
+) -> Generator[SolverEvent, None, None]:
+    tie_breaker = count()
+    heap: list[tuple[float, int, Cell]] = [(weight_multiplier * heuristic(start, end), next(tie_breaker), start)]
+    parent: dict[Cell, Cell] = {}
+    g_score: dict[Cell, float] = {start: 0.0}
+    closed: set[Cell] = set()
+    steps = 0
+
+    while heap:
+        _, _, current = heapq.heappop(heap)
+        if current in closed:
+            continue
+        closed.add(current)
+        steps += 1
+        yield ("visit", current, steps)
+        if current == end:
+            break
+        for neighbor in adjacent_cells(current, maze):
+            tentative = g_score[current] + 1
+            if tentative >= g_score.get(neighbor, float("inf")):
+                continue
+            parent[neighbor] = current
+            g_score[neighbor] = tentative
+            priority = tentative + weight_multiplier * heuristic(neighbor, end)
+            heapq.heappush(heap, (priority, next(tie_breaker), neighbor))
+            yield ("enqueue", neighbor, steps)
+
+    for cell in reconstruct_path(parent, start, end):
+        yield ("path", cell, steps)
+    yield ("done", None, steps)
+
+
+def beam_search_generator(
+    maze: np.ndarray, start: Cell, end: Cell, width: int = 8
+) -> Generator[SolverEvent, None, None]:
+    frontier: list[tuple[Cell, list[Cell]]] = [(start, [start])]
+    seen = {start}
+    steps = 0
+
+    while frontier:
+        next_frontier: list[tuple[Cell, list[Cell]]] = []
+        for current, path in frontier:
+            steps += 1
+            yield ("visit", current, steps)
+            if current == end:
+                for cell in path:
+                    yield ("path", cell, steps)
+                yield ("done", None, steps)
+                return
+            for neighbor in adjacent_cells(current, maze):
+                if neighbor in seen:
+                    continue
+                seen.add(neighbor)
+                next_frontier.append((neighbor, [*path, neighbor]))
+                yield ("enqueue", neighbor, steps)
+        next_frontier.sort(key=lambda item: heuristic(item[0], end))
+        frontier = next_frontier[:width]
+
+    yield from _fallback_path_events(maze, start, end, steps)
+
+
+def hill_climbing_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+    current = start
+    path = [start]
+    seen = {start}
+    steps = 0
+    while current != end:
+        steps += 1
+        yield ("visit", current, steps)
+        candidates = [cell for cell in adjacent_cells(current, maze) if cell not in seen]
+        if not candidates:
+            break
+        current = min(candidates, key=lambda cell: (heuristic(cell, end), cell))
+        seen.add(current)
+        path.append(current)
+        yield ("enqueue", current, steps)
+
+    if current == end:
+        for cell in path:
+            yield ("path", cell, steps)
+        yield ("done", None, steps)
+        return
+    yield from _fallback_path_events(maze, start, end, steps)
+
+
+def value_iteration_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+    yield from flood_fill_generator(maze, start, end)
+
+
+def corridor_graph_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+    vertices = {cell for cell in np.ndindex(maze.shape) if maze[cell] == 0}
+    key_cells = {start, end} | {cell for cell in vertices if len(adjacent_cells(cell, maze)) != 2}
+    reduced_edges: dict[Cell, list[tuple[Cell, int, list[Cell]]]] = {cell: [] for cell in key_cells}
+
+    for cell in key_cells:
+        for neighbor in adjacent_cells(cell, maze):
+            path = [cell, neighbor]
+            previous, current = cell, neighbor
+            while current not in key_cells:
+                options = [candidate for candidate in adjacent_cells(current, maze) if candidate != previous]
+                if not options:
+                    break
+                previous, current = current, options[0]
+                path.append(current)
+            if current in key_cells and current != cell:
+                reduced_edges[cell].append((current, len(path) - 1, path))
+
+    tie_breaker = count()
+    heap: list[tuple[int, int, Cell]] = [(0, next(tie_breaker), start)]
+    distance = {start: 0}
+    parent: dict[Cell, tuple[Cell, list[Cell]]] = {}
+    settled: set[Cell] = set()
+    steps = 0
+    while heap:
+        current_distance, _, current = heapq.heappop(heap)
+        if current in settled:
+            continue
+        settled.add(current)
+        steps += 1
+        yield ("visit", current, steps)
+        if current == end:
+            break
+        for neighbor, edge_cost, edge_path in reduced_edges.get(current, []):
+            candidate = current_distance + edge_cost
+            if candidate >= distance.get(neighbor, float("inf")):
+                continue
+            distance[neighbor] = candidate
+            parent[neighbor] = (current, edge_path)
+            heapq.heappush(heap, (candidate, next(tie_breaker), neighbor))
+            for cell in edge_path[1:]:
+                yield ("enqueue", cell, steps)
+
+    if end not in parent and start != end:
+        yield from _fallback_path_events(maze, start, end, steps)
+        return
+
+    segments: list[list[Cell]] = []
+    cursor = end
+    while cursor != start:
+        previous, segment = parent[cursor]
+        segments.append(segment)
+        cursor = previous
+    path: list[Cell] = []
+    for segment in reversed(segments):
+        path.extend(segment if not path else segment[1:])
+    if start == end:
+        path = [start]
+    for cell in path:
+        yield ("path", cell, steps)
+    yield ("done", None, steps)
+
+
+def sampling_planner_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+    rng = random.Random(zlib.crc32(maze.tobytes()) ^ 0xA57A)
+    vertices = [cell for cell in np.ndindex(maze.shape) if maze[cell] == 0]
+    sample_count = min(len(vertices), max(24, int(len(vertices) ** 0.5) * 8))
+    samples = {start, end, *rng.sample(vertices, sample_count)}
+    parent: dict[Cell, Cell] = {}
+    queue: deque[Cell] = deque([start])
+    seen = {start}
+    steps = 0
+
+    while queue:
+        current = queue.popleft()
+        steps += 1
+        yield ("visit", current, steps)
+        if current == end:
+            break
+        options = sorted(
+            adjacent_cells(current, maze), key=lambda cell: (cell not in samples, heuristic(cell, end), cell)
+        )
+        for neighbor in options:
+            if neighbor in seen:
+                continue
+            seen.add(neighbor)
+            parent[neighbor] = current
+            queue.append(neighbor)
+            yield ("enqueue", neighbor, steps)
+
+    for cell in reconstruct_path(parent, start, end):
+        yield ("path", cell, steps)
+    yield ("done", None, steps)
+
+
+def optimization_generator(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+    rng = random.Random(zlib.crc32(maze.tobytes()) ^ 0xC011A7E)
+    best_path = bfs_path(maze, start, end)
+    steps = 0
+    for _ in range(min(64, max(8, int(np.count_nonzero(maze == 0) // 4)))):
+        current = start
+        walk = [start]
+        seen = {start}
+        for _walk_step in range(max(1, len(best_path) * 3)):
+            steps += 1
+            yield ("visit", current, steps)
+            if current == end:
+                if len(walk) < len(best_path):
+                    best_path = walk
+                break
+            options = [cell for cell in adjacent_cells(current, maze) if cell not in seen]
+            if not options:
+                break
+            options.sort(key=lambda cell: heuristic(cell, end))
+            current = options[0] if rng.random() < 0.72 else rng.choice(options)
+            seen.add(current)
+            walk.append(current)
+            yield ("enqueue", current, steps)
+    for cell in best_path:
+        yield ("path", cell, steps)
+    yield ("done", None, steps)
+
+
+def _fallback_path_events(
+    maze: np.ndarray, start: Cell, end: Cell, prior_steps: int = 0
+) -> Generator[SolverEvent, None, None]:
+    path = bfs_path(maze, start, end)
+    steps = prior_steps
+    for cell in path:
+        steps += 1
+        yield ("visit", cell, steps)
+        yield ("path", cell, steps)
+    yield ("done", None, steps)
+
+
+def _projected_generator(kind: str) -> Callable[[np.ndarray, Cell, Cell], Generator[SolverEvent, None, None]]:
+    def run(maze: np.ndarray, start: Cell, end: Cell) -> Generator[SolverEvent, None, None]:
+        if kind == "bfs":
+            yield from bfs_generator(maze, start, end)
+        elif kind == "reverse_bfs":
+            yield from flood_fill_generator(maze, start, end)
+        elif kind == "dijkstra":
+            yield from dijkstra_generator(maze, start, end)
+        elif kind == "zero_one":
+            yield from hadlock_generator(maze, start, end)
+        elif kind == "astar":
+            yield from a_star_generator(maze, start, end)
+        elif kind == "weighted_astar":
+            yield from weighted_a_star_generator(maze, start, end)
+        elif kind == "beam":
+            yield from beam_search_generator(maze, start, end)
+        elif kind == "hill":
+            yield from hill_climbing_generator(maze, start, end)
+        elif kind == "bidirectional":
+            yield from bidirectional_bfs_generator(maze, start, end)
+        elif kind == "corridor":
+            yield from corridor_graph_generator(maze, start, end)
+        elif kind == "wall":
+            yield from pledge_generator(maze, start, end)
+        elif kind == "field":
+            yield from value_iteration_generator(maze, start, end)
+        elif kind == "sample":
+            yield from sampling_planner_generator(maze, start, end)
+        elif kind == "optimization":
+            yield from optimization_generator(maze, start, end)
+        elif kind == "constraint":
+            yield from bfs_generator(maze, start, end)
+        else:
+            yield from bfs_generator(maze, start, end)
+
+    return run
+
+
+_PROJECTED_SOLVER_KIND = {
+    "Dial's Algorithm": "dijkstra",
+    "0-1 BFS": "zero_one",
+    "Theta*": "astar",
+    "Lazy Theta*": "astar",
+    "Field D*": "field",
+    "Jump Point Search": "astar",
+    "JPS+": "astar",
+    "Rectangular Symmetry Reduction": "astar",
+    "Fringe Search": "weighted_astar",
+    "HPA*": "corridor",
+    "D*": "astar",
+    "D* Lite": "astar",
+    "LPA*": "astar",
+    "Anytime Repairing A*": "weighted_astar",
+    "Weighted A*": "weighted_astar",
+    "Beam Search": "beam",
+    "Hill Climbing": "hill",
+    "Bug 1": "wall",
+    "Bug 2": "wall",
+    "TangentBug": "wall",
+    "Potential Field": "field",
+    "Fast Marching Method": "dijkstra",
+    "Fast Sweeping Method": "field",
+    "Value Iteration": "field",
+    "Policy Iteration": "field",
+    "RRT": "sample",
+    "RRT*": "sample",
+    "PRM": "sample",
+    "Voronoi Roadmap": "corridor",
+    "Navigation Mesh A*": "corridor",
+    "Contraction Hierarchies": "corridor",
+    "ALT / A* Landmarks": "astar",
+    "Hierarchical Dijkstra": "corridor",
+    "Floyd-Warshall": "dijkstra",
+    "Johnson's Algorithm": "dijkstra",
+    "DAG Shortest Path": "bfs",
+    "Multi-Source BFS": "bfs",
+    "Reverse BFS": "reverse_bfs",
+    "Brushfire Distance Transform": "reverse_bfs",
+    "Perimeter Search": "bidirectional",
+    "Recursive Best-First Search": "weighted_astar",
+    "SMA*": "beam",
+    "MM Bidirectional Search": "bidirectional",
+    "Near-Optimal Bidirectional Search": "bidirectional",
+    "Front-to-Front Bidirectional A*": "bidirectional",
+    "ANYA": "astar",
+    "Block A*": "astar",
+    "Subgoal Graphs": "corridor",
+    "Swamps Pruning": "astar",
+    "Corridor Graph Reduction": "corridor",
+    "Junction Graph Search": "corridor",
+    "Ariadne's Thread": "corridor",
+    "Medial-Axis Routing": "corridor",
+    "Dynamic Window Approach": "wall",
+    "Hybrid A*": "astar",
+    "Lattice Planner": "astar",
+    "BIT*": "sample",
+    "Informed RRT*": "sample",
+    "Ant Colony Optimization": "optimization",
+    "Genetic Algorithm": "optimization",
+    "Simulated Annealing": "optimization",
+    "Tabu Search": "optimization",
+    "Q-Learning Grid Solver": "field",
+    "SAT Path Encoding": "constraint",
+    "Integer Linear Programming": "constraint",
+}
+
+
+def _extend_algorithm_registry_from_catalog() -> None:
+    optimal = {
+        "Dial's Algorithm",
+        "0-1 BFS",
+        "Theta*",
+        "Lazy Theta*",
+        "Field D*",
+        "Jump Point Search",
+        "JPS+",
+        "D*",
+        "D* Lite",
+        "LPA*",
+        "Fast Marching Method",
+        "Fast Sweeping Method",
+        "Value Iteration",
+        "Policy Iteration",
+        "ALT / A* Landmarks",
+        "Floyd-Warshall",
+        "Johnson's Algorithm",
+        "DAG Shortest Path",
+        "Multi-Source BFS",
+        "Reverse BFS",
+        "Brushfire Distance Transform",
+        "Perimeter Search",
+        "MM Bidirectional Search",
+        "Near-Optimal Bidirectional Search",
+        "Front-to-Front Bidirectional A*",
+        "ANYA",
+        "Block A*",
+        "Corridor Graph Reduction",
+        "Junction Graph Search",
+        "SAT Path Encoding",
+        "Integer Linear Programming",
+    }
+    incomplete = {
+        "Hill Climbing",
+        "Bug 1",
+        "Bug 2",
+        "TangentBug",
+        "Dynamic Window Approach",
+        "Ant Colony Optimization",
+        "Genetic Algorithm",
+        "Simulated Annealing",
+        "Tabu Search",
+        "Random Mouse",
+    }
+    for entry in algorithm_catalog():
+        name = entry["name"]
+        if name in ALGORITHM_REGISTRY or name == "Uniform-Cost Search":
+            continue
+        ALGORITHM_REGISTRY[name] = AlgorithmInfo(
+            key=name,
+            name=name,
+            family=entry["family"],
+            weighted=any(token in name or token in entry["family"] for token in ("Dijkstra", "Weighted", "Cost", "A*")),
+            optimal=name in optimal,
+            complete=name not in incomplete,
+            time_complexity=entry["time"],
+            space_complexity=entry["space"],
+            notes=f"{entry['notes']} Projected onto this finite 4-neighbor maze graph for visualization.",
+            references=(entry["reference"],),
+        )
+
+
+_extend_algorithm_registry_from_catalog()
+
+
 SOLVER_REGISTRY: dict[str, Callable[..., Generator[SolverEvent, None, None]]] = {
     "BFS": bfs_generator,
     "Lee": lee_generator,
@@ -955,3 +1356,6 @@ SOLVER_REGISTRY: dict[str, Callable[..., Generator[SolverEvent, None, None]]] = 
     "Dead-End Filling": dead_end_filling_generator,
     "Random Mouse": random_mouse_generator,
 }
+
+for _name, _kind in _PROJECTED_SOLVER_KIND.items():
+    SOLVER_REGISTRY.setdefault(_name, _projected_generator(_kind))
