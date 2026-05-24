@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver Museum</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.15" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.16" />
   </head>
   <body>
     <div class="app-shell">
@@ -177,11 +177,6 @@ trace goal path</pre>
             <div><span>Corridor Bias</span><strong id="corridorBias">0.00</strong></div>
           </section>
 
-          <section class="catalog-summary">
-            <h3>Known 2D Coverage</h3>
-            <p id="roadmapSummary">Loading algorithm catalog...</p>
-          </section>
-
           <section class="algorithm-anatomy" aria-label="Selected algorithm anatomy">
             <div class="panel-heading">
               <h3>Algorithm Anatomy</h3>
@@ -218,18 +213,13 @@ trace goal path</pre>
           </section>
 
           <details class="comparison-panel">
-            <summary>Comparison</summary>
+            <summary>Solver Comparison</summary>
             <table>
               <thead>
-                <tr><th>Algorithm</th><th>Family</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th></tr>
+                <tr><th>Algorithm</th><th>Family</th><th>Guarantee</th><th>Cost</th></tr>
               </thead>
               <tbody id="comparisonRows"></tbody>
             </table>
-          </details>
-
-          <details class="comparison-panel">
-            <summary>Known 2D Algorithm Coverage</summary>
-            <div id="roadmapRows" class="roadmap-list"></div>
           </details>
         </aside>
 
@@ -303,6 +293,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.15"></script>
+    <script type="module" src="./main.js?v=0.2.16"></script>
   </body>
 </html>

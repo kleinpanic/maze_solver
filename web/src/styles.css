@@ -73,7 +73,7 @@ select {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(250px, 300px) minmax(560px, 1fr) minmax(300px, 370px);
+  grid-template-columns: minmax(248px, 286px) minmax(620px, 1.35fr) minmax(292px, 330px);
   gap: 14px;
   padding: 14px;
   min-height: 0;
@@ -89,10 +89,10 @@ select {
 
 .sidebar {
   align-self: start;
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -308,16 +308,16 @@ button.primary {
 }
 
 canvas {
-  width: min(100%, calc(100vh - 130px));
-  aspect-ratio: 1;
-  max-height: calc(100vh - 130px);
+  width: min(100%, 920px);
+  aspect-ratio: var(--maze-aspect, 1 / 1);
+  height: auto;
   border-radius: 8px;
   background: #091017;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
 }
 
 .algorithm-exhibit {
-  width: min(100%, calc(100vh - 130px));
+  width: min(100%, 920px);
   box-sizing: border-box;
   border: 1px solid rgba(53, 208, 199, 0.22);
   border-radius: 8px;
@@ -393,7 +393,7 @@ canvas {
 
 .inspector section {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .math-card,
@@ -452,6 +452,7 @@ canvas {
 
 .anatomy-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -459,7 +460,7 @@ canvas {
   border: 1px solid rgba(145, 163, 184, 0.12);
   border-radius: 6px;
   background: rgba(16, 26, 37, 0.74);
-  padding: 10px;
+  padding: 9px;
 }
 
 .anatomy-grid article span {
@@ -474,15 +475,15 @@ canvas {
   display: block;
   margin-top: 4px;
   color: #e8eef6;
-  font-size: 13px;
-  line-height: 1.3;
+  font-size: 12px;
+  line-height: 1.25;
 }
 
 .math-card strong,
 .math-card span {
   color: #e8eef6;
-  font-size: 13px;
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.3;
 }
 
 .math-card span {
@@ -586,14 +587,14 @@ p {
 .theory,
 .metrics {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
 }
 
 .theory div,
 .metrics div {
   border: 1px solid rgba(145, 163, 184, 0.14);
   border-radius: 8px;
-  padding: 12px;
+  padding: 9px;
   background: #101a25;
 }
 
@@ -611,18 +612,20 @@ p {
 }
 
 .theory strong {
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.2;
 }
 
 .metrics strong {
-  font-size: 19px;
+  font-size: 16px;
   line-height: 1.15;
 }
 
 .comparison-panel {
-  border-top: 1px solid rgba(145, 163, 184, 0.14);
-  padding-top: 10px;
+  border: 1px solid rgba(145, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(16, 26, 37, 0.58);
+  padding: 10px;
 }
 
 .comparison-panel summary {
@@ -632,14 +635,15 @@ p {
 }
 
 .comparison-panel[open] {
-  max-height: 360px;
+  max-height: 300px;
   overflow: auto;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 12px;
+  table-layout: fixed;
 }
 
 .catalog-summary {
@@ -702,8 +706,10 @@ table {
 th,
 td {
   border-bottom: 1px solid rgba(145, 163, 184, 0.14);
-  padding: 9px 4px;
+  padding: 8px 4px;
   text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
 th {
@@ -723,7 +729,6 @@ th {
 
   canvas {
     width: min(100%, 86vw);
-    max-height: none;
   }
 
   .algorithm-exhibit {

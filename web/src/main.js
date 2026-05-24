@@ -632,6 +632,17 @@ let state = {
 
 const canvas = document.querySelector("#mazeCanvas");
 const context = canvas.getContext("2d");
+
+function syncCanvasGeometry(maze) {
+  if (!maze) return;
+  const rows = maze.length;
+  const cols = maze[0].length;
+  const width = 900;
+  const height = Math.max(240, Math.round((width * rows) / cols));
+  if (canvas.width !== width) canvas.width = width;
+  if (canvas.height !== height) canvas.height = height;
+  canvas.style.setProperty("--maze-aspect", `${cols} / ${rows}`);
+}
 const controls = {
   generator: document.querySelector("#generator"),
   rows: document.querySelector("#rows"),
@@ -1160,6 +1171,7 @@ function generateMaze(options = {}) {
     autoSeed: shouldRandomize ? usedSeed : null,
   };
   controls.status.textContent = "ready";
+  syncCanvasGeometry(maze);
   draw();
   updateMetrics();
 }
@@ -1811,6 +1823,7 @@ function run() {
 function draw() {
   const maze = state.maze;
   if (!maze) return;
+  syncCanvasGeometry(maze);
   const rows = maze.length;
   const cols = maze[0].length;
   const cell = Math.min(canvas.width / cols, canvas.height / rows);
@@ -2029,7 +2042,7 @@ function renderComparison() {
   controls.comparisonRows.innerHTML = Object.entries(algorithms)
     .map(
       ([key, info]) =>
-        `<tr><td data-label="Algorithm">${key}</td><td data-label="Family">${info.family}</td><td data-label="Complete">${info.complete}</td><td data-label="Optimal">${info.optimal}</td><td data-label="Time">${info.time}</td><td data-label="Space">${info.space}</td></tr>`,
+        `<tr><td data-label="Algorithm">${key}</td><td data-label="Family">${info.family}</td><td data-label="Guarantee">${info.complete} / ${info.optimal}</td><td data-label="Cost">${info.time}<br>${info.space}</td></tr>`,
     )
     .join("");
 }
@@ -2160,15 +2173,19 @@ async function renderRoadmap() {
   const backlogCount = knownBacklog.length;
   const knownTotal = coverageRows.length || state.catalog.length;
   const percent = knownTotal ? Math.round((implemented / knownTotal) * 100) : 0;
-  controls.roadmapSummary.textContent =
-    `${implemented}/${knownTotal} known-applicable 2D algorithms covered (${percent}%). ` +
-    `${backlogCount} researched candidates remain queued across graph search, routing, robotics, sampling, geometry, optimization, and constraint families.`;
-  controls.roadmapRows.innerHTML = coverageRows
-    .map(
-      (entry) =>
-        `<div class="roadmap-row"><span class="status-pill ${entry.status}">${entry.status}</span><strong>${entry.name}</strong><span>${entry.family}</span><em>${entry.time}</em></div>`,
-    )
-    .join("");
+  if (controls.roadmapSummary) {
+    controls.roadmapSummary.textContent =
+      `${implemented}/${knownTotal} known-applicable 2D algorithms covered (${percent}%). ` +
+      `${backlogCount} researched candidates remain queued across graph search, routing, robotics, sampling, geometry, optimization, and constraint families.`;
+  }
+  if (controls.roadmapRows) {
+    controls.roadmapRows.innerHTML = coverageRows
+      .map(
+        (entry) =>
+          `<div class="roadmap-row"><span class="status-pill ${entry.status}">${entry.status}</span><strong>${entry.name}</strong><span>${entry.family}</span><em>${entry.time}</em></div>`,
+      )
+      .join("");
+  }
 }
 
 controls.algorithmGroup.addEventListener("click", (event) => {

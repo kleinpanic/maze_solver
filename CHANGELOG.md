@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.16
+
+- Resized the WebUI maze canvas to match the active maze geometry so wide mazes
+  no longer reserve a square dead zone below the rendered map.
+- Kept the selected-algorithm lesson panel directly under the rendered map and
+  added a smoke-test guard for that layout.
+- Removed the right-side known-algorithm coverage block and tightened the
+  inspector comparison, metrics, and anatomy sections for a more even desktop
+  composition.
+
 ## 0.2.15
 
 - Added a persistent WebUI selected-algorithm lesson panel below the maze canvas

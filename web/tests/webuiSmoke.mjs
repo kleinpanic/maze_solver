@@ -53,12 +53,9 @@ try {
   });
 
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle" });
-  await page.waitForFunction(() => document.querySelector("#roadmapSummary")?.textContent.includes("known-applicable"));
-  const roadmapSummary = await page.locator("#roadmapSummary").innerText();
-  assert.match(roadmapSummary, /85\/12\d known-applicable 2D algorithms covered/);
-  assert.match(roadmapSummary, /\d+ researched candidates remain queued/);
-  const roadmapRows = await page.locator(".roadmap-row").count();
-  assert.ok(roadmapRows >= 120);
+  await page.waitForFunction(() => /^\d+\/\d+\b/.test(document.querySelector("#algorithmCount")?.textContent ?? ""));
+  assert.equal(await page.locator("#roadmapSummary").count(), 0);
+  assert.equal(await page.locator("#roadmapRows").count(), 0);
   const solverButtons = await page.locator("[data-algorithm]").count();
   assert.ok(solverButtons >= 80);
   assert.match(await page.locator("#algorithmCount").innerText(), new RegExp(`^${solverButtons}/${solverButtons}\\b`));
@@ -83,6 +80,11 @@ try {
   assert.match(await page.locator("#exhibitTrace").innerText(), /Frontier policy/i);
   assert.match(await page.locator("#exhibitTradeoff").innerText(), /correctness|bias|fail|bound|visited/i);
   assert.equal(await page.locator("#algorithmExecutionBadge").innerText(), "native");
+  const initialCanvasBox = await page.locator("#mazeCanvas").boundingBox();
+  const initialExhibitBox = await page.locator(".algorithm-exhibit").boundingBox();
+  assert.ok(initialCanvasBox.width / initialCanvasBox.height > 1.35);
+  assert.ok(initialExhibitBox.y - (initialCanvasBox.y + initialCanvasBox.height) <= 16);
+  assert.ok(initialExhibitBox.y < 620);
   assert.match(await page.locator("#anatomyFrontier").innerText(), /queue|frontier/i);
   assert.equal(await page.locator(".trace-legend").count(), 1);
   assert.equal(await page.locator(".trace-legend span").count(), 6);
