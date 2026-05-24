@@ -58,10 +58,13 @@ try {
   assert.ok(roadmapRows >= 80, "algorithm roadmap should track a broad 2D solver catalog");
   const solverButtons = await page.locator("[data-algorithm]").count();
   assert.ok(solverButtons >= 80, "roadmap algorithms should be exposed as runnable solver buttons");
+  assert.equal(await page.locator("#density").count(), 0, "wall density should not be exposed as a misleading control");
+  assert.equal(await page.locator("#rows").inputValue(), "41", "default rows should show a richer first maze");
+  assert.equal(await page.locator("#cols").inputValue(), "61", "default columns should show a richer first maze");
+  assert.equal(await page.locator("#speed").inputValue(), "44", "default speed should be brisk enough for larger mazes");
   await page.fill("#rows", "21");
   await page.fill("#cols", "25");
   await page.evaluate(() => {
-    document.querySelector("#density").value = "0.7";
     document.querySelector("#speed").value = "60";
   });
 

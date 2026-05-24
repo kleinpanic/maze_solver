@@ -109,35 +109,31 @@ class Render:
         # Rows Entry
         ttk.Label(self.sidebar, text="Rows:").pack(anchor="w")
         self.rows_entry = ttk.Entry(self.sidebar)
-        self.rows_entry.insert(0, "31")  # Default value
+        self.rows_entry.insert(0, "41")
         self.rows_entry.pack(fill="x", pady=5)
 
         # Columns Entry
         ttk.Label(self.sidebar, text="Columns:").pack(anchor="w")
         self.cols_entry = ttk.Entry(self.sidebar)
-        self.cols_entry.insert(0, "31")  # Default value
+        self.cols_entry.insert(0, "41")
         self.cols_entry.pack(fill="x", pady=5)
 
         # Dead Ends Scale
         ttk.Label(self.sidebar, text="Dead Ends:").pack(anchor="w")
-        self.dead_ends_scale = ttk.Scale(self.sidebar, from_=1, to=10, orient="horizontal")
-        self.dead_ends_scale.set(10)  # Default value
+        self.dead_ends_scale = ttk.Scale(self.sidebar, from_=1, to=14, orient="horizontal")
+        self.dead_ends_scale.set(12)
         self.dead_ends_scale.pack(fill="x", pady=5)
 
         # Branching Factor Scale
         ttk.Label(self.sidebar, text="Branching Factor:").pack(anchor="w")
-        self.branching_factor_scale = ttk.Scale(
-            self.sidebar, from_=1, to=10, orient="horizontal"
-        )  # Adjust max as needed
-        self.branching_factor_scale.set(3)  # Default value
+        self.branching_factor_scale = ttk.Scale(self.sidebar, from_=1, to=14, orient="horizontal")
+        self.branching_factor_scale.set(8)
         self.branching_factor_scale.pack(fill="x", pady=5)
 
         # Connectedness Scale
         ttk.Label(self.sidebar, text="Connectedness (%):").pack(anchor="w")
-        self.connectedness_scale = ttk.Scale(
-            self.sidebar, from_=1, to=9.9, orient="horizontal"
-        )  # Scale ranges from 1 to 9 for 10% to 90%
-        self.connectedness_scale.set(7)  # Default value is 7, representing 70%
+        self.connectedness_scale = ttk.Scale(self.sidebar, from_=1, to=9.9, orient="horizontal")
+        self.connectedness_scale.set(8.5)
         self.connectedness_scale.pack(fill="x", pady=5)
 
         # Maze Generation Algorithm Dropdown
@@ -152,12 +148,6 @@ class Render:
         ttk.Label(self.sidebar, text="Seed (optional):").pack(anchor="w", pady=(10, 0))
         self.seed_entry = ttk.Entry(self.sidebar)
         self.seed_entry.pack(fill="x", pady=5)
-
-        # Wall Density Scale
-        ttk.Label(self.sidebar, text="Wall Density:").pack(anchor="w", pady=(10, 0))
-        self.density_scale = ttk.Scale(self.sidebar, from_=0, to=1, orient="horizontal")
-        self.density_scale.set(0.3)  # Default value
-        self.density_scale.pack(fill="x", pady=5)
 
         # Generate Maze Button
         self.generate_button = ttk.Button(
@@ -277,8 +267,6 @@ class Render:
                 seed = None
             else:
                 seed = int(seed_input)
-            wall_density = float(self.density_scale.get())
-
             # Ensure rows and cols are odd numbers
             if rows % 2 == 0:
                 rows += 1
@@ -324,7 +312,6 @@ class Render:
                 "connectedness": connectedness,
                 "generation_algorithm": generation_algorithm,
                 "seed": seed,
-                "wall_density": wall_density,
             }
         except ValueError:
             messagebox.showerror(

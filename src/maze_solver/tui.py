@@ -35,7 +35,6 @@ def main(argv: list[str] | None = None) -> None:
         args.cols,
         generation_algorithm=args.generator,
         seed=args.seed,
-        wall_density=args.wall_density,
         dead_ends=args.dead_ends,
         branching_factor=args.branching_factor,
         connectedness=args.connectedness,
@@ -82,7 +81,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--rows", type=int, default=21)
     parser.add_argument("--cols", type=int, default=41)
     parser.add_argument("--seed", type=int, default=None)
-    parser.add_argument("--wall-density", type=float, default=0.2)
     parser.add_argument("--dead-ends", type=int, default=6)
     parser.add_argument("--branching-factor", type=int, default=5)
     parser.add_argument("--connectedness", type=int, default=75)

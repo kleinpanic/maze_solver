@@ -49,5 +49,6 @@ def test_tui_main_prints_metadata_legend_and_stats(capsys):
     assert "Maze Solver TUI | Eller | A* | seed 2026" in output
     assert "A* Search | Heuristic shortest path | time=O(E log V) with a binary heap" in output
     assert "Legend: S=start G=goal *=path +=frontier .=visited" in output
-    assert "path=39 visited=44 frontier=49 steps=44" in output
+    assert "path=27 visited=34 frontier=40 steps=34" in output
+    assert "wall_ratio=56.3%" in output
     assert "\033[" not in output

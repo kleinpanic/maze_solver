@@ -4,6 +4,7 @@ import { mazeStatistics } from "./mazeStats.js";
 
 const WALL = 1;
 const OPEN = 0;
+const DEFAULT_TEXTURE_DENSITY = 0.55;
 
 const algorithms = {
   BFS: {
@@ -605,7 +606,6 @@ const controls = {
   rows: document.querySelector("#rows"),
   cols: document.querySelector("#cols"),
   seed: document.querySelector("#seed"),
-  density: document.querySelector("#density"),
   speed: document.querySelector("#speed"),
   generate: document.querySelector("#generate"),
   run: document.querySelector("#run"),
@@ -1014,6 +1014,30 @@ function generateRecursiveDivision(rows, cols, random) {
   return maze;
 }
 
+function applyTextureProfile(maze, density, random) {
+  const rows = maze.length;
+  const cols = maze[0].length;
+  const protectedCells = new Set([key([1, 1]), key([rows - 2, cols - 2])]);
+  const clampedDensity = Math.max(0, Math.min(1, density));
+  const interiorWalls = [];
+  const passages = [];
+  for (let r = 1; r < rows - 1; r += 1) {
+    for (let c = 1; c < cols - 1; c += 1) {
+      if (protectedCells.has(key([r, c]))) continue;
+      if (maze[r][c] === WALL) interiorWalls.push([r, c]);
+      else passages.push([r, c]);
+    }
+  }
+
+  shuffle(interiorWalls, random);
+  const loopBudget = Math.floor((1 - clampedDensity) * interiorWalls.length * 0.14);
+  for (const [r, c] of interiorWalls.slice(0, loopBudget)) maze[r][c] = OPEN;
+
+  shuffle(passages, random);
+  const closeBudget = Math.floor(clampedDensity * passages.length * 0.16);
+  for (const [r, c] of passages.slice(0, closeBudget)) maze[r][c] = WALL;
+}
+
 function generateMaze(options = {}) {
   clearInterval(state.timer);
   const rows = odd(controls.rows.value);
@@ -1042,13 +1066,7 @@ function generateMaze(options = {}) {
     usedSeed = baseSeed + attempt;
     const random = rng(usedSeed);
     const candidate = generators[generator](rows, cols, random);
-    const density = Number(controls.density.value);
-    for (let r = 1; r < rows - 1; r++) {
-      for (let c = 1; c < cols - 1; c++) {
-        if ((r === 1 && c === 1) || (r === rows - 2 && c === cols - 2)) continue;
-        if (candidate[r][c] === OPEN && random() < density * 0.03) candidate[r][c] = WALL;
-      }
-    }
+    applyTextureProfile(candidate, DEFAULT_TEXTURE_DENSITY, random);
     candidate[1][1] = OPEN;
     candidate[rows - 2][cols - 2] = OPEN;
     connectOpenComponents(candidate, random);

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.9
+
+- Removed the misleading wall-density control from WebUI, GUI, and TUI defaults; maze texture is now shaped internally by the generator profile.
+- Raised the default visual complexity with larger first-run mazes, Prim-style browser generation, stronger texture shaping, and faster default animation.
+
 ## 0.2.8
 
 - Added generated mathematical breakdown panels for every catalog-projected WebUI solver so the full algorithm museum has runnable traces and educational notes.

@@ -21,6 +21,7 @@ from maze_solver.grid import (
 )
 
 MazeBuilder = Callable[[int, int, random.Random], np.ndarray]
+DEFAULT_TEXTURE_DENSITY = 0.55
 
 
 @dataclass(frozen=True)
@@ -130,7 +131,7 @@ def generate_maze(
     cols: int,
     generation_algorithm: str = "Recursive Backtracker",
     seed: int | None = None,
-    wall_density: float = 0.3,
+    wall_density: float = DEFAULT_TEXTURE_DENSITY,
     dead_ends: int = 10,
     branching_factor: int = 3,
     connectedness: int = 70,
@@ -469,8 +470,8 @@ def _apply_loops_and_noise(
     connectedness: int,
 ) -> None:
     protected = {default_start(), default_goal(maze)}
+    density = max(0.0, min(wall_density, 1.0))
     openness = max(0, min(100, connectedness)) / 100
-    extra_openings = int(branching_factor * openness)
     interior_walls = [
         (row, col)
         for row in range(1, maze.shape[0] - 1)
@@ -478,6 +479,7 @@ def _apply_loops_and_noise(
         if maze[row, col] == WALL and (row, col) not in protected
     ]
     rng.shuffle(interior_walls)
+    extra_openings = int(branching_factor * openness + (1.0 - density) * len(interior_walls) * 0.14)
     for cell in interior_walls[:extra_openings]:
         maze[cell] = PASSAGE
 
@@ -488,9 +490,7 @@ def _apply_loops_and_noise(
         if maze[row, col] == PASSAGE and (row, col) not in protected
     ]
     rng.shuffle(passage_cells)
-    closing_budget = min(
-        len(passage_cells), max(0, dead_ends // 3) + int(max(0.0, min(wall_density, 1.0)) * len(passage_cells) * 0.03)
-    )
+    closing_budget = min(len(passage_cells), max(0, dead_ends // 2) + int(density * len(passage_cells) * 0.16))
     for cell in passage_cells[:closing_budget]:
         maze[cell] = WALL
 

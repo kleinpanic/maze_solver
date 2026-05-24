@@ -116,7 +116,6 @@ class MazeSolverApp:
                 cols=params["cols"],
                 generation_algorithm=params["generation_algorithm"],
                 seed=seed,
-                wall_density=params["wall_density"],
                 dead_ends=dead_ends,
                 branching_factor=branching_factor,
                 connectedness=connectedness,
@@ -206,7 +205,7 @@ class MazeSolverApp:
             # Schedule the next step
             if self.steps % 10 == 0:
                 self.render.set_status(f"{self.render.update_algorithm_selection()} | steps {self.steps}")
-            self.root.after(10, self._process_solver_step)  # Adjust delay as needed for visualization speed
+            self.root.after(4, self._process_solver_step)
         except StopIteration:
             self.solving = False
             self.stop_timer()
@@ -223,7 +222,6 @@ class MazeSolverApp:
             f"Steps: {self.steps or 0}\n"
             f"Maze Size: {params.get('rows', '?')}x{params.get('cols', '?')}\n"
             f"Generation Algorithm: {params.get('generation_algorithm', 'Unknown')}\n"
-            f"Wall Density: {params.get('wall_density', 'Unknown')}\n"
             f"Seed: {params.get('seed', 'None')}"
         )
         if self.show_completion_dialog:
