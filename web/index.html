@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver Museum</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.12" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.13" />
   </head>
   <body>
     <div class="app-shell">
@@ -15,7 +15,7 @@
           <span>Maze Solver Museum</span>
         </div>
         <div class="topbar-actions">
-          <span id="status" class="status">ready</span>
+          <span id="status" class="status" aria-live="polite">ready</span>
           <a href="https://github.com/kleinpanic/maze_solver" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </header>
@@ -82,6 +82,10 @@
 
           <label>Seed <input id="seed" type="number" placeholder="random" /></label>
           <label>Speed <input id="speed" type="range" min="1" max="60" step="1" value="44" /></label>
+          <label class="inline-check">
+            <input id="randomizeOnAlgorithm" type="checkbox" />
+            Fresh maze on solver change
+          </label>
           <div class="trace-legend" aria-label="Trace color legend">
             <span><i class="legend-start"></i>start</span>
             <span><i class="legend-goal"></i>goal-origin</span>
@@ -95,7 +99,13 @@
         </aside>
 
         <section class="stage">
-          <canvas id="mazeCanvas" width="900" height="900"></canvas>
+          <canvas
+            id="mazeCanvas"
+            width="900"
+            height="900"
+            role="img"
+            aria-label="Maze visualization with green start, red goal, cyan visits, amber frontier, purple goal-origin waves, and magenta path"
+          ></canvas>
         </section>
 
         <aside class="sidebar inspector">
@@ -129,8 +139,15 @@
           </section>
 
           <section class="catalog-summary">
-            <h3>Roadmap</h3>
+            <h3>Known 2D Coverage</h3>
             <p id="roadmapSummary">Loading algorithm catalog...</p>
+          </section>
+
+          <section class="math-card" aria-label="Current algorithm math summary">
+            <h3>Why It Works</h3>
+            <p id="inspectorMathSummary">Layered graph expansion over a grid graph G = (V, E).</p>
+            <strong id="inspectorMathFormula">dist[v] = dist[u] + 1</strong>
+            <span id="inspectorMathWatch">The cyan wave grows in distance layers.</span>
           </section>
 
           <details class="comparison-panel">
@@ -144,7 +161,7 @@
           </details>
 
           <details class="comparison-panel">
-            <summary>Tracked 2D Algorithm Roadmap</summary>
+            <summary>Known 2D Algorithm Coverage</summary>
             <div id="roadmapRows" class="roadmap-list"></div>
           </details>
         </aside>
@@ -219,6 +236,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.12"></script>
+    <script type="module" src="./main.js?v=0.2.13"></script>
   </body>
 </html>

@@ -19,7 +19,7 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 - Real-time visualization of visited cells, frontier cells, and final paths.
 - Deterministic maze generation with seeds and a connected-open-component guarantee after noise/loop shaping.
 - Shared Python package under `src/maze_solver`.
-- Browser-side educational WebUI with Canvas animation, researched complexity notes, calculated per-maze graph bounds, runtime metrics, per-solver math breakdowns, generator theory, maze-structure statistics, and 85 runnable algorithm renditions.
+- Browser-side educational WebUI with Canvas animation, researched complexity notes, calculated per-maze graph bounds, runtime metrics, per-solver math breakdowns, generator theory, maze-structure statistics, and 85 runnable renditions against a 128-algorithm known-applicable 2D coverage counter.
 - Desktop GUI with algorithm metadata, restart-on-selection solving, runtime controls, graph telemetry, calculated bound estimates, and high-contrast visualization states.
 - Terminal UI with reproducible runs, optional ANSI color, calculated graph/work statistics, and a `--catalog` view for the full roadmap.
 - CI for Python 3.11, 3.12, and 3.13.
@@ -59,7 +59,7 @@ Recursive Backtracker, Randomized Prim, Randomized Kruskal, Wilson, Aldous-Brode
 Every generated maze keeps all open cells reachable from the start after the optional loop/noise pass. That means a seed can produce braided routes and extra rooms, but it should not leave disconnected islands that look playable while being unreachable.
 
 See [docs/ALGORITHMS.md](docs/ALGORITHMS.md) for the full catalog, complexity notes, and references.
-The machine-readable roadmap is tracked in [src/maze_solver/algorithm_catalog.json](src/maze_solver/algorithm_catalog.json) and currently covers 85 implemented maze, grid, routing, robotics, sampling, optimization, and constraint-solving renditions.
+The machine-readable implementation catalog is tracked in [src/maze_solver/algorithm_catalog.json](src/maze_solver/algorithm_catalog.json). The coverage counter combines those 85 implemented maze, grid, routing, robotics, sampling, optimization, and constraint-solving renditions with the researched backlog in [src/maze_solver/known_2d_backlog.json](src/maze_solver/known_2d_backlog.json), currently 85 of 128 known-applicable 2D algorithms covered.
 
 ## Quick Start
 

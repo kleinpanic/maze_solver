@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.13
+
+- Added searchable, filterable desktop GUI algorithm browsing across the full
+  shared solver catalog.
+- Added GUI math/research metadata and a speed slider for desktop runs.
+- Fixed `python -m maze_solver.tui` execution for terminal catalog use.
+- Changed WebUI solver switching to preserve the current maze by default, with
+  an explicit fresh-maze toggle for randomized comparisons.
+- Added a compact WebUI math card in the inspector, accessibility metadata, and
+  row/column clamping.
+- Replaced the WebUI tracked-roadmap framing with a known-applicable 2D coverage
+  counter: 85 implemented renditions out of 128 researched solver candidates,
+  with the remaining algorithms shown as backlog.
+
 ## 0.2.12
 
 - Added distinct goal-origin trace coloring for reverse wave solvers and their

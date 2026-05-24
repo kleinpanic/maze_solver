@@ -196,6 +196,21 @@ button:focus-visible {
   font-weight: 800;
 }
 
+.inline-check {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+  color: #b7c7d9;
+  font-size: 12px;
+}
+
+.inline-check input {
+  width: auto;
+  accent-color: #35d0c7;
+}
+
 .trace-legend span {
   display: flex;
   align-items: center;
@@ -271,6 +286,24 @@ canvas {
 .inspector section {
   display: grid;
   gap: 10px;
+}
+
+.math-card {
+  border: 1px solid rgba(53, 208, 199, 0.2);
+  border-radius: 8px;
+  background: rgba(53, 208, 199, 0.06);
+  padding: 12px;
+}
+
+.math-card strong,
+.math-card span {
+  color: #e8eef6;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.math-card span {
+  color: #9fb0c3;
 }
 
 h2,
@@ -476,6 +509,11 @@ table {
 .status-pill.planned {
   background: rgba(240, 184, 77, 0.15);
   color: #ffd37a;
+}
+
+.status-pill.backlog {
+  background: rgba(118, 147, 255, 0.16);
+  color: #aebfff;
 }
 
 th,

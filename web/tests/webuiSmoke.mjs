@@ -53,9 +53,12 @@ try {
   });
 
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle" });
-  await page.waitForFunction(() => document.querySelector("#roadmapSummary")?.textContent.includes("implemented/tracked"));
+  await page.waitForFunction(() => document.querySelector("#roadmapSummary")?.textContent.includes("known-applicable"));
+  const roadmapSummary = await page.locator("#roadmapSummary").innerText();
+  assert.match(roadmapSummary, /85\/12\d known-applicable 2D algorithms covered/);
+  assert.match(roadmapSummary, /\d+ researched candidates remain queued/);
   const roadmapRows = await page.locator(".roadmap-row").count();
-  assert.ok(roadmapRows >= 80);
+  assert.ok(roadmapRows >= 120);
   const solverButtons = await page.locator("[data-algorithm]").count();
   assert.ok(solverButtons >= 80);
   assert.match(await page.locator("#algorithmCount").innerText(), new RegExp(`^${solverButtons}/${solverButtons}\\b`));
@@ -71,6 +74,8 @@ try {
   assert.equal(await page.locator("#rows").inputValue(), "41");
   assert.equal(await page.locator("#cols").inputValue(), "61");
   assert.equal(await page.locator("#speed").inputValue(), "44");
+  assert.equal(await page.locator("#randomizeOnAlgorithm").isChecked(), false);
+  assert.equal(await page.locator("#inspectorMathSummary").count(), 1);
   assert.equal(await page.locator(".trace-legend").count(), 1);
   const clippedButtons = await page.$$eval("[data-algorithm]", (buttons) =>
     buttons.filter((button) => button.scrollHeight > button.clientHeight + 1 || button.scrollWidth > button.clientWidth + 1).length,
@@ -99,7 +104,7 @@ try {
       timeout: 15_000,
     });
     const secondSeed = await page.locator("#seed").inputValue();
-    assert.notEqual(firstSeed, secondSeed);
+    assert.equal(firstSeed, secondSeed);
     await page.click("#run");
     await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
       timeout: 15_000,
@@ -109,6 +114,19 @@ try {
     assert.ok(pathLength > 0);
     assert.ok(openCells >= pathLength);
   }
+  await page.check("#randomizeOnAlgorithm");
+  const beforeRandomizedSwitchSeed = await page.locator("#seed").inputValue();
+  await page.click('[data-algorithm="Dijkstra"]');
+  await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
+    timeout: 15_000,
+  });
+  assert.notEqual(await page.locator("#seed").inputValue(), beforeRandomizedSwitchSeed);
+  await page.uncheck("#randomizeOnAlgorithm");
+  await page.fill("#rows", "999");
+  await page.fill("#cols", "1000");
+  await page.click("#generate");
+  assert.equal(await page.locator("#rows").inputValue(), "81");
+  assert.equal(await page.locator("#cols").inputValue(), "101");
 
   for (const algorithm of [
     "Flood Fill",

@@ -3,7 +3,12 @@ from __future__ import annotations
 import numpy as np
 
 from maze_solver.algorithms import ALGORITHM_REGISTRY, SOLVER_REGISTRY
-from maze_solver.catalog import algorithm_catalog, catalog_summary
+from maze_solver.catalog import (
+    algorithm_catalog,
+    catalog_summary,
+    known_2d_algorithm_backlog,
+    known_2d_coverage_summary,
+)
 
 
 def test_algorithm_catalog_tracks_broad_2d_solver_roadmap():
@@ -30,6 +35,22 @@ def test_implemented_catalog_matches_solver_registry():
 
     assert registry_names <= implemented
     assert catalog_summary() == (len(implemented), len(algorithm_catalog()))
+
+
+def test_known_2d_coverage_counter_extends_beyond_current_catalog():
+    catalog_names = {entry["name"] for entry in algorithm_catalog()}
+    backlog = known_2d_algorithm_backlog()
+    backlog_names = {entry["name"] for entry in backlog}
+    implemented, known_total, backlog_count = known_2d_coverage_summary()
+
+    assert len(backlog) >= 40
+    assert len(backlog_names) == len(backlog)
+    assert catalog_names.isdisjoint(backlog_names)
+    assert implemented == len(algorithm_catalog())
+    assert known_total == len(algorithm_catalog()) + len(backlog)
+    assert backlog_count == len(backlog)
+    assert known_total >= 120
+    assert {"RRT-Connect", "Conflict-Based Search", "SMT Path Encoding"} <= backlog_names
 
 
 def test_every_catalog_algorithm_has_a_runnable_grid_rendition():

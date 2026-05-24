@@ -205,7 +205,7 @@ class MazeSolverApp:
             # Schedule the next step
             if self.steps % 10 == 0:
                 self.render.set_status(f"{self.render.update_algorithm_selection()} | steps {self.steps}")
-            self.root.after(4, self._process_solver_step)
+            self.root.after(self.render.solve_delay_ms(), self._process_solver_step)
         except StopIteration:
             self.solving = False
             self.stop_timer()

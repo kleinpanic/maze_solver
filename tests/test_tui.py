@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 import numpy as np
 
 from maze_solver import tui
@@ -61,3 +64,15 @@ def test_tui_catalog_filters_and_flags(capsys):
     assert "Dijkstra" in output
     assert "weighted=True" in output
     assert "Breadth-First Search" not in output
+
+
+def test_tui_module_execution_prints_catalog():
+    result = subprocess.run(
+        [sys.executable, "-m", "maze_solver.tui", "--catalog", "--catalog-search", "hadlock"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "Maze Solver Algorithm Catalog" in result.stdout
+    assert "Hadlock" in result.stdout

@@ -1,0 +1,389 @@
+[
+  {
+    "name": "Bidirectional Dijkstra",
+    "family": "Weighted shortest path",
+    "status": "backlog",
+    "time": "O((V + E) log V)",
+    "space": "O(V)",
+    "notes": "Runs two uniform-cost searches until their settled frontiers certify a shortest path.",
+    "reference": "Classical bidirectional shortest-path search"
+  },
+  {
+    "name": "K-Shortest Paths (Yen)",
+    "family": "K-shortest paths",
+    "status": "backlog",
+    "time": "O(KV(E + V log V))",
+    "space": "O(KV)",
+    "notes": "Enumerates loopless alternatives after the first shortest route.",
+    "reference": "Yen 1971"
+  },
+  {
+    "name": "Eppstein K-Shortest Paths",
+    "family": "K-shortest paths",
+    "status": "backlog",
+    "time": "O(E + V log V + K log K)",
+    "space": "O(E + V + K)",
+    "notes": "Uses sidetrack edges to enumerate many near-shortest routes efficiently.",
+    "reference": "Eppstein 1998"
+  },
+  {
+    "name": "Adaptive A*",
+    "family": "Heuristic shortest path",
+    "status": "backlog",
+    "time": "O(E log V) per search",
+    "space": "O(V)",
+    "notes": "Reuses previous search effort by updating heuristic values after each run.",
+    "reference": "Koenig and Likhachev 2005"
+  },
+  {
+    "name": "Real-Time A*",
+    "family": "Real-time heuristic search",
+    "status": "backlog",
+    "time": "O(lookahead) per move",
+    "space": "O(V)",
+    "notes": "Interleaves acting and bounded local search for online grid navigation.",
+    "reference": "Korf 1990"
+  },
+  {
+    "name": "Learning Real-Time A*",
+    "family": "Real-time heuristic search",
+    "status": "backlog",
+    "time": "O(lookahead) per move",
+    "space": "O(V)",
+    "notes": "Improves its heuristic while moving through repeated maze trials.",
+    "reference": "Korf 1990"
+  },
+  {
+    "name": "RTAA*",
+    "family": "Real-time heuristic search",
+    "status": "backlog",
+    "time": "O(lookahead log V) per move",
+    "space": "O(V)",
+    "notes": "Updates heuristic values after a bounded A* lookahead.",
+    "reference": "Koenig and Likhachev 2006"
+  },
+  {
+    "name": "Anytime Dynamic A*",
+    "family": "Incremental replanning",
+    "status": "backlog",
+    "time": "O(k log V) per repair",
+    "space": "O(V)",
+    "notes": "Combines anytime weighted search with incremental graph repair.",
+    "reference": "Likhachev et al. AD*"
+  },
+  {
+    "name": "A*epsilon",
+    "family": "Bounded-suboptimal search",
+    "status": "backlog",
+    "time": "O(E log V)",
+    "space": "O(V)",
+    "notes": "Uses focal search to trade exact optimality for faster bounded solutions.",
+    "reference": "Pearl and Kim 1982"
+  },
+  {
+    "name": "Multi-Heuristic A*",
+    "family": "Heuristic shortest path",
+    "status": "backlog",
+    "time": "O(mE log V)",
+    "space": "O(mV)",
+    "notes": "Runs multiple heuristic queues anchored by an admissible baseline.",
+    "reference": "Aine et al. 2016"
+  },
+  {
+    "name": "Safe Interval Path Planning",
+    "family": "Time-expanded planning",
+    "status": "backlog",
+    "time": "O(E log V) over intervals",
+    "space": "O(VI)",
+    "notes": "Plans through cells only during collision-free time intervals.",
+    "reference": "Phillips and Likhachev 2011"
+  },
+  {
+    "name": "Cooperative A*",
+    "family": "Multi-agent pathfinding",
+    "status": "backlog",
+    "time": "O(E_t log V_t)",
+    "space": "O(V_t)",
+    "notes": "Searches a reservation-table grid to avoid other moving agents.",
+    "reference": "Silver 2005"
+  },
+  {
+    "name": "Windowed Hierarchical Cooperative A*",
+    "family": "Multi-agent pathfinding",
+    "status": "backlog",
+    "time": "O(wE log V)",
+    "space": "O(wV)",
+    "notes": "Limits cooperative search to a rolling time window.",
+    "reference": "Silver 2005"
+  },
+  {
+    "name": "Conflict-Based Search",
+    "family": "Multi-agent pathfinding",
+    "status": "backlog",
+    "time": "Exponential worst case",
+    "space": "O(nodes * agents)",
+    "notes": "Splits agent conflicts into constraints and replans individual paths.",
+    "reference": "Sharon et al. 2015"
+  },
+  {
+    "name": "Visibility Graph Shortest Path",
+    "family": "Computational geometry",
+    "status": "backlog",
+    "time": "O(n^2 log n)",
+    "space": "O(n^2)",
+    "notes": "Connects visible obstacle vertices before running shortest-path search.",
+    "reference": "Classical visibility graph planning"
+  },
+  {
+    "name": "Exact Cellular Decomposition",
+    "family": "Computational geometry",
+    "status": "backlog",
+    "time": "O(n log n + E)",
+    "space": "O(n + E)",
+    "notes": "Partitions free space into exact cells and searches their adjacency graph.",
+    "reference": "Latombe robot motion planning"
+  },
+  {
+    "name": "Boustrophedon Decomposition",
+    "family": "Computational geometry",
+    "status": "backlog",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Sweeps a line through planar free space to build coverage/navigation cells.",
+    "reference": "Choset 2000"
+  },
+  {
+    "name": "Trapezoidal Decomposition",
+    "family": "Computational geometry",
+    "status": "backlog",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Builds a planar roadmap from vertical decomposition of polygonal obstacles.",
+    "reference": "Classical computational geometry planning"
+  },
+  {
+    "name": "Bug 0",
+    "family": "Obstacle avoidance",
+    "status": "backlog",
+    "time": "O(k)",
+    "space": "O(1)",
+    "notes": "Moves toward the goal, then follows obstacle boundaries when blocked.",
+    "reference": "Lumelsky and Stepanov bug algorithms"
+  },
+  {
+    "name": "DistBug",
+    "family": "Obstacle avoidance",
+    "status": "backlog",
+    "time": "O(k)",
+    "space": "O(1)",
+    "notes": "Leaves obstacle boundaries when distance and visibility criteria improve.",
+    "reference": "Kamon and Rivlin 1997"
+  },
+  {
+    "name": "VisBug",
+    "family": "Obstacle avoidance",
+    "status": "backlog",
+    "time": "O(k)",
+    "space": "O(1)",
+    "notes": "Uses visibility information while navigating obstacle boundaries.",
+    "reference": "Lumelsky and Stepanov bug-family navigation"
+  },
+  {
+    "name": "RangeBug",
+    "family": "Obstacle avoidance",
+    "status": "backlog",
+    "time": "O(k)",
+    "space": "O(1)",
+    "notes": "Uses range sensing to choose leave points during boundary following.",
+    "reference": "Range-sensor bug algorithm literature"
+  },
+  {
+    "name": "Vector Field Histogram",
+    "family": "Reactive navigation",
+    "status": "backlog",
+    "time": "O(sectors)",
+    "space": "O(sectors)",
+    "notes": "Builds polar obstacle histograms for local steering decisions.",
+    "reference": "Borenstein and Koren 1991"
+  },
+  {
+    "name": "Elastic Bands",
+    "family": "Trajectory optimization",
+    "status": "backlog",
+    "time": "O(iterations * path)",
+    "space": "O(path)",
+    "notes": "Deforms a route under obstacle and smoothing forces.",
+    "reference": "Quinlan and Khatib 1993"
+  },
+  {
+    "name": "Timed Elastic Band",
+    "family": "Trajectory optimization",
+    "status": "backlog",
+    "time": "O(iterations * path)",
+    "space": "O(path)",
+    "notes": "Optimizes both path geometry and timing constraints.",
+    "reference": "Rosmann et al. TEB local planner"
+  },
+  {
+    "name": "Dynamic Roadmap",
+    "family": "Roadmap planning",
+    "status": "backlog",
+    "time": "O(repair + search)",
+    "space": "O(V + E)",
+    "notes": "Updates roadmap validity as obstacles or costs change.",
+    "reference": "Dynamic roadmap motion planning"
+  },
+  {
+    "name": "Lazy PRM",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(samples log samples + checks)",
+    "space": "O(samples + edges)",
+    "notes": "Delays edge collision checks until a candidate route needs them.",
+    "reference": "Bohlin and Kavraki 2000"
+  },
+  {
+    "name": "PRM*",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(n log n)",
+    "space": "O(n log n)",
+    "notes": "Asymptotically optimal probabilistic roadmap construction.",
+    "reference": "Karaman and Frazzoli 2011"
+  },
+  {
+    "name": "RRT-Connect",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(samples)",
+    "space": "O(samples)",
+    "notes": "Grows two rapidly-exploring trees toward each other.",
+    "reference": "Kuffner and LaValle 2000"
+  },
+  {
+    "name": "RRG",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(n log n)",
+    "space": "O(n log n)",
+    "notes": "Rapidly-exploring random graph with asymptotic optimality guarantees.",
+    "reference": "Karaman and Frazzoli 2011"
+  },
+  {
+    "name": "RRT#",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Maintains shortest-path consistency values over an RRT-like graph.",
+    "reference": "Arslan and Tsiotras 2013"
+  },
+  {
+    "name": "RRTX",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(log n) amortized repair",
+    "space": "O(n)",
+    "notes": "Repairs an asymptotically optimal tree in dynamic environments.",
+    "reference": "Otte and Frazzoli 2016"
+  },
+  {
+    "name": "EST",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(samples)",
+    "space": "O(samples)",
+    "notes": "Expansive-space tree sampling favors unexplored regions.",
+    "reference": "Hsu et al. 1997"
+  },
+  {
+    "name": "SBL",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(samples)",
+    "space": "O(samples)",
+    "notes": "Single-query bidirectional lazy collision-checking planner.",
+    "reference": "Sanchez and Latombe 2001"
+  },
+  {
+    "name": "FMT*",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Fast marching tree method over random geometric graphs.",
+    "reference": "Janson et al. 2015"
+  },
+  {
+    "name": "ABIT*",
+    "family": "Sampling-based planning",
+    "status": "backlog",
+    "time": "O(n log n)",
+    "space": "O(n)",
+    "notes": "Advanced batched informed trees improve anytime sampling behavior.",
+    "reference": "Strub and Gammell ABIT*"
+  },
+  {
+    "name": "Ordered Upwind Method",
+    "family": "Continuous shortest path",
+    "status": "backlog",
+    "time": "O(N log N)",
+    "space": "O(N)",
+    "notes": "Solves anisotropic front propagation for continuous cost fields.",
+    "reference": "Sethian and Vladimirsky 2003"
+  },
+  {
+    "name": "Fast Iterative Method",
+    "family": "Continuous shortest path",
+    "status": "backlog",
+    "time": "O(N)",
+    "space": "O(N)",
+    "notes": "Iteratively solves Eikonal equations for distance fields.",
+    "reference": "Jeong and Whitaker 2008"
+  },
+  {
+    "name": "Particle Swarm Optimization",
+    "family": "Metaheuristic",
+    "status": "backlog",
+    "time": "O(particles * iterations)",
+    "space": "O(particles)",
+    "notes": "Optimizes waypoint paths with swarm velocity updates.",
+    "reference": "Kennedy and Eberhart 1995"
+  },
+  {
+    "name": "Cross-Entropy Method",
+    "family": "Metaheuristic",
+    "status": "backlog",
+    "time": "O(samples * iterations)",
+    "space": "O(samples)",
+    "notes": "Samples candidate paths and updates a distribution toward elite routes.",
+    "reference": "Rubinstein cross-entropy method"
+  },
+  {
+    "name": "Network Simplex Path Formulation",
+    "family": "Optimization",
+    "status": "backlog",
+    "time": "solver dependent",
+    "space": "solver dependent",
+    "notes": "Solves shortest path as a network-flow linear optimization problem.",
+    "reference": "Classical network simplex optimization"
+  },
+  {
+    "name": "CP-SAT Path Encoding",
+    "family": "Constraint solving",
+    "status": "backlog",
+    "time": "solver dependent",
+    "space": "solver dependent",
+    "notes": "Encodes path feasibility with integer and Boolean constraints.",
+    "reference": "Constraint programming path-planning encodings"
+  },
+  {
+    "name": "SMT Path Encoding",
+    "family": "Constraint solving",
+    "status": "backlog",
+    "time": "solver dependent",
+    "space": "solver dependent",
+    "notes": "Uses satisfiability modulo theories for bounded grid-path constraints.",
+    "reference": "SMT-based planning encodings"
+  }
+]

@@ -5,7 +5,7 @@ import sys
 from collections.abc import Iterable
 
 from maze_solver.algorithms import ALGORITHM_REGISTRY, SOLVER_REGISTRY
-from maze_solver.catalog import algorithm_catalog, catalog_summary
+from maze_solver.catalog import algorithm_catalog, known_2d_algorithm_backlog, known_2d_coverage_summary
 from maze_solver.generation import GENERATION_REGISTRY, generate_maze
 from maze_solver.grid import Cell, default_goal, default_start
 from maze_solver.stats import complexity_score, format_complexity_score, maze_statistics, run_statistics
@@ -51,7 +51,7 @@ def main(argv: list[str] | None = None) -> None:
     maze_stats = maze_statistics(maze, start, goal)
     run_stats = run_statistics(maze, path, visited, frontier, steps, len(events))
     score = format_complexity_score(complexity_score(info, maze_stats, max(1, len(path))))
-    implemented, tracked = catalog_summary()
+    implemented, known_total, _backlog = known_2d_coverage_summary()
 
     print(f"Maze Solver TUI | {args.generator} | {args.algorithm} | seed {seed}")
     print(
@@ -59,7 +59,7 @@ def main(argv: list[str] | None = None) -> None:
         f"space={info.space_complexity} | optimal={info.optimal} | complete={info.complete}"
     )
     print(
-        f"catalog={implemented}/{tracked} implemented/tracked | V={maze_stats.vertices} E={maze_stats.edges} bound={score}"
+        f"catalog={implemented}/{known_total} known-applicable | V={maze_stats.vertices} E={maze_stats.edges} bound={score}"
     )
     if args.legend:
         print("Legend: S=start G=goal *=path +=frontier .=visited █=wall")
@@ -99,10 +99,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def print_catalog(args: argparse.Namespace) -> None:
-    implemented, tracked = catalog_summary()
-    print(f"Maze Solver Algorithm Catalog | {implemented}/{tracked} implemented/tracked")
+    implemented, known_total, backlog = known_2d_coverage_summary()
+    print(f"Maze Solver Algorithm Catalog | {implemented}/{known_total} known-applicable 2D algorithms covered")
+    print(f"Implemented={implemented} | Backlog={backlog}")
 
-    rows = list(algorithm_catalog())
+    rows = [*algorithm_catalog(), *known_2d_algorithm_backlog()]
     query = args.catalog_search.casefold()
     if query:
         rows = [
@@ -209,3 +210,7 @@ def render_maze(
                 parts.append(" ")
         lines.append("".join(parts))
     return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    main()

@@ -2,7 +2,7 @@
 
 Maze Solver models a maze as a rectangular grid graph. Open cells are vertices, passable north/south/east/west moves are edges, and the default edge cost is one. That keeps the visualizer approachable while still exposing standard graph-search and maze-generation ideas.
 
-The Python core, WebUI, GUI, and TUI share solver metadata so browser demonstrations, terminal runs, and desktop experiments describe the same implemented algorithms. The larger machine-readable roadmap in `src/maze_solver/algorithm_catalog.json` tracks 85 implemented 2D maze/grid/plane solving renditions, from BFS and Dijkstra through JPS, Theta*, D* Lite, RRT*, potential fields, metaheuristics, and constraint encodings.
+The Python core, WebUI, GUI, and TUI share solver metadata so browser demonstrations, terminal runs, and desktop experiments describe the same implemented algorithms. The larger machine-readable implementation catalog in `src/maze_solver/algorithm_catalog.json` tracks 85 implemented 2D maze/grid/plane solving renditions, from BFS and Dijkstra through JPS, Theta*, D* Lite, RRT*, potential fields, metaheuristics, and constraint encodings. The known-applicable coverage counter also reads `src/maze_solver/known_2d_backlog.json`, so the WebUI and TUI report 85 of 128 researched 2D candidates covered instead of treating the current implementation catalog as the whole field.
 
 Some algorithms have a direct finite-grid implementation. Others, such as continuous robotics planners, sampling planners, metaheuristics, and SAT/ILP formulations, are projected onto the current finite 4-neighbor maze graph so the museum can run them interactively while preserving their intended search family and comparison role.
 

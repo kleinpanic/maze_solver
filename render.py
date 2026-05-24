@@ -4,7 +4,10 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from maze_solver.algorithms import ALGORITHM_REGISTRY
+from maze_solver.catalog import known_2d_coverage_summary
 from maze_solver.generation import GENERATION_REGISTRY
+
+PINNED_ALGORITHMS = ("BFS", "Dijkstra", "A*", "DFS", "Bidirectional BFS", "Lee")
 
 PALETTE = {
     "bg": "#0b1117",
@@ -22,6 +25,27 @@ PALETTE = {
     "wall": "#091017",
     "open": "#edf3f8",
 }
+
+
+def algorithm_display_names(query: str = "", family: str = "All families") -> list[str]:
+    query = query.casefold().strip()
+    pinned = {name: index for index, name in enumerate(PINNED_ALGORITHMS)}
+
+    def matches(name):
+        info = ALGORITHM_REGISTRY[name]
+        searchable = (
+            f"{name} {info.name} {info.family} {info.notes} {info.time_complexity} {info.space_complexity}".casefold()
+        )
+        return (family == "All families" or info.family == family) and (not query or query in searchable)
+
+    return sorted(
+        (name for name in ALGORITHM_REGISTRY if matches(name)),
+        key=lambda name: (
+            pinned.get(name, len(pinned) + 1),
+            ALGORITHM_REGISTRY[name].family,
+            ALGORITHM_REGISTRY[name].name,
+        ),
+    )
 
 
 class Render:
@@ -155,14 +179,46 @@ class Render:
         )
         self.generate_button.pack(fill="x", pady=(10, 10))
 
-        # Algorithm Selection Dropdown for Solving
-        ttk.Label(self.sidebar, text="Select Algorithm:").pack(anchor="w")
+        # Algorithm Selection for Solving
+        ttk.Label(self.sidebar, text="Algorithm Catalog", style="Section.TLabel").pack(anchor="w", pady=(8, 6))
         self.algorithm_var = tk.StringVar()
-        self.algorithm_combobox = ttk.Combobox(self.sidebar, textvariable=self.algorithm_var, state="readonly")
-        self.algorithm_combobox["values"] = tuple(ALGORITHM_REGISTRY)
-        self.algorithm_combobox.current(0)
-        self.algorithm_combobox.pack(fill="x", pady=5)
-        self.algorithm_combobox.bind("<<ComboboxSelected>>", lambda _event: self.app.select_algorithm_and_rerun())
+        self.algorithm_search_var = tk.StringVar()
+        self.algorithm_family_var = tk.StringVar(value="All families")
+        self.algorithm_count_var = tk.StringVar()
+        self.algorithm_search = ttk.Entry(self.sidebar, textvariable=self.algorithm_search_var)
+        self.algorithm_search.insert(0, "")
+        self.algorithm_search.pack(fill="x", pady=(0, 5))
+        self.algorithm_search_var.trace_add("write", lambda *_args: self.refresh_algorithm_list())
+        self.algorithm_family_filter = ttk.Combobox(
+            self.sidebar,
+            textvariable=self.algorithm_family_var,
+            values=("All families", *sorted({info.family for info in ALGORITHM_REGISTRY.values()})),
+            state="readonly",
+        )
+        self.algorithm_family_filter.pack(fill="x", pady=5)
+        self.algorithm_family_filter.bind("<<ComboboxSelected>>", lambda _event: self.refresh_algorithm_list())
+        ttk.Label(self.sidebar, textvariable=self.algorithm_count_var, style="Body.TLabel").pack(anchor="w")
+        list_frame = ttk.Frame(self.sidebar, style="Panel.TFrame")
+        list_frame.pack(fill="both", pady=(4, 8))
+        self.algorithm_listbox = tk.Listbox(
+            list_frame,
+            height=9,
+            exportselection=False,
+            activestyle="none",
+            bg=PALETTE["panel_2"],
+            fg=PALETTE["text"],
+            selectbackground=PALETTE["accent"],
+            selectforeground=PALETTE["bg"],
+            highlightthickness=1,
+            highlightbackground=PALETTE["border"],
+            relief="flat",
+            font=("Helvetica", 10, "bold"),
+        )
+        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.algorithm_listbox.yview)
+        self.algorithm_listbox.configure(yscrollcommand=scrollbar.set)
+        self.algorithm_listbox.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        self.algorithm_listbox.bind("<<ListboxSelect>>", self._on_algorithm_listbox_select)
 
         self.algorithm_info_var = tk.StringVar()
         self.algorithm_info = ttk.Label(
@@ -173,6 +229,7 @@ class Render:
             justify="left",
         )
         self.algorithm_info.pack(fill="x", pady=(2, 8))
+        self.refresh_algorithm_list(select="BFS")
 
         # Start Button
         self.start_button = ttk.Button(self.sidebar, text="Start", command=self.app.solve_maze, style="Accent.TButton")
@@ -190,6 +247,10 @@ class Render:
         ttk.Label(self.sidebar, textvariable=self.status_var, style="Body.TLabel", wraplength=260).pack(
             anchor="w", pady=(10, 0)
         )
+        ttk.Label(self.sidebar, text="Speed", style="Section.TLabel").pack(anchor="w", pady=(14, 0))
+        self.speed_scale = ttk.Scale(self.sidebar, from_=1, to=60, orient="horizontal")
+        self.speed_scale.set(52)
+        self.speed_scale.pack(fill="x", pady=(6, 0))
         ttk.Label(
             self.sidebar,
             text="Legend: green start, red goal, cyan visited, amber frontier, magenta final path.",
@@ -215,15 +276,25 @@ class Render:
             justify="left",
         ).pack(anchor="w", fill="x")
         ttk.Label(self.info_panel, text="Catalog", style="Section.TLabel").pack(anchor="w", pady=(22, 8))
+        self.algorithm_detail_var = tk.StringVar(value="Pick an algorithm to inspect its math model.")
+        implemented, known_total, _backlog = known_2d_coverage_summary()
         ttk.Label(
             self.info_panel,
-            text=f"{len(ALGORITHM_REGISTRY)} implemented solvers in the desktop selector. Planned roadmap lives in the shared catalog.",
+            text=f"{implemented}/{known_total} known-applicable 2D algorithms covered; {len(ALGORITHM_REGISTRY)} runnable in the desktop selector.",
             style="Body.TLabel",
             wraplength=260,
         ).pack(anchor="w")
+        ttk.Label(self.info_panel, text="Mathematics", style="Section.TLabel").pack(anchor="w", pady=(22, 8))
+        ttk.Label(
+            self.info_panel,
+            textvariable=self.algorithm_detail_var,
+            style="Body.TLabel",
+            wraplength=260,
+            justify="left",
+        ).pack(anchor="w", fill="x")
 
     def update_algorithm_panel(self):
-        algorithm = self.algorithm_combobox.get()
+        algorithm = self.algorithm_var.get()
         if algorithm not in ALGORITHM_REGISTRY:
             algorithm = next(iter(ALGORITHM_REGISTRY))
             self.algorithm_var.set(algorithm)
@@ -231,6 +302,14 @@ class Render:
         self.algorithm_info_var.set(
             f"{info.name}\n{info.family}\nTime {info.time_complexity} | Space {info.space_complexity}\n{info.notes}"
         )
+        if hasattr(self, "algorithm_detail_var"):
+            self.algorithm_detail_var.set(
+                f"Weighted: {info.weighted}\n"
+                f"Optimal: {info.optimal}\n"
+                f"Complete: {info.complete}\n"
+                f"Model: finite 4-neighbor grid graph G=(V,E)\n"
+                f"Reference: {'; '.join(info.references)}"
+            )
 
     def algorithm_info_for(self, algorithm):
         if algorithm not in ALGORITHM_REGISTRY:
@@ -324,6 +403,36 @@ class Render:
 
     def update_algorithm_selection(self):
         return self.algorithm_var.get()
+
+    def refresh_algorithm_list(self, select: str | None = None):
+        current = select or self.algorithm_var.get()
+        names = algorithm_display_names(self.algorithm_search_var.get(), self.algorithm_family_var.get())
+        self.algorithm_listbox.delete(0, tk.END)
+        for name in names:
+            info = ALGORITHM_REGISTRY[name]
+            self.algorithm_listbox.insert(tk.END, f"{name}  |  {info.family}")
+        self.algorithm_count_var.set(f"{len(names)}/{len(ALGORITHM_REGISTRY)} shown")
+        if current not in names and names:
+            current = names[0]
+        if current in names:
+            index = names.index(current)
+            self.algorithm_var.set(current)
+            self.algorithm_listbox.selection_clear(0, tk.END)
+            self.algorithm_listbox.selection_set(index)
+            self.algorithm_listbox.see(index)
+        self.update_algorithm_panel()
+
+    def _on_algorithm_listbox_select(self, _event):
+        selection = self.algorithm_listbox.curselection()
+        if not selection:
+            return
+        raw = self.algorithm_listbox.get(selection[0])
+        self.algorithm_var.set(raw.split("  |  ", 1)[0])
+        self.app.select_algorithm_and_rerun()
+
+    def solve_delay_ms(self):
+        speed = int(float(self.speed_scale.get()))
+        return max(1, 62 - speed)
 
     def cell_bounds(self, maze, row, col):
         rows, cols = maze.shape

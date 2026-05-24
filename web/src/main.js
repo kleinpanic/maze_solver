@@ -613,6 +613,7 @@ const controls = {
   familyFilter: document.querySelector("#familyFilter"),
   algorithmCount: document.querySelector("#algorithmCount"),
   clearAlgorithmFilters: document.querySelector("#clearAlgorithmFilters"),
+  randomizeOnAlgorithm: document.querySelector("#randomizeOnAlgorithm"),
   generate: document.querySelector("#generate"),
   run: document.querySelector("#run"),
   status: document.querySelector("#status"),
@@ -646,6 +647,9 @@ const controls = {
   generatorInvariant: document.querySelector("#generatorInvariant"),
   generatorProcedure: document.querySelector("#generatorProcedure"),
   mathSummary: document.querySelector("#mathSummary"),
+  inspectorMathSummary: document.querySelector("#inspectorMathSummary"),
+  inspectorMathFormula: document.querySelector("#inspectorMathFormula"),
+  inspectorMathWatch: document.querySelector("#inspectorMathWatch"),
   graphModel: document.querySelector("#graphModel"),
   costModel: document.querySelector("#costModel"),
   mathFormula: document.querySelector("#mathFormula"),
@@ -678,8 +682,8 @@ function rng(seed) {
   };
 }
 
-function odd(value) {
-  const normalized = Math.max(5, Number(value) || 5);
+function odd(value, max = 101) {
+  const normalized = Math.max(5, Math.min(max, Number(value) || 5));
   return normalized % 2 === 0 ? normalized + 1 : normalized;
 }
 
@@ -1054,8 +1058,8 @@ function applyTextureProfile(maze, density, random) {
 
 function generateMaze(options = {}) {
   clearInterval(state.timer);
-  const rows = odd(controls.rows.value);
-  const cols = odd(controls.cols.value);
+  const rows = odd(controls.rows.value, Number(controls.rows.max) || 81);
+  const cols = odd(controls.cols.value, Number(controls.cols.max) || 101);
   controls.rows.value = rows;
   controls.cols.value = cols;
   const shouldRandomize = options.randomizeSeed || controls.seed.value === "" || controls.seed.value === String(state.autoSeed);
@@ -1872,6 +1876,9 @@ function updateMetrics() {
   controls.generatorInvariant.textContent = generator.invariant;
   controls.generatorProcedure.textContent = generator.procedure;
   controls.mathSummary.textContent = breakdown.summary;
+  controls.inspectorMathSummary.textContent = breakdown.summary;
+  controls.inspectorMathFormula.textContent = breakdown.formula;
+  controls.inspectorMathWatch.textContent = breakdown.watch;
   controls.graphModel.textContent = breakdown.graph;
   controls.costModel.textContent = breakdown.cost;
   controls.mathFormula.textContent = breakdown.formula;
@@ -1957,7 +1964,7 @@ function renderAlgorithmButtons() {
   controls.algorithmGroup.innerHTML = filtered
     .map(
       ([name, info]) =>
-        `<button data-algorithm="${escapeHtml(name)}" title="${escapeHtml(`${info.name} - ${info.family}`)}" class="${name === state.algorithm ? "active" : ""}">` +
+        `<button data-algorithm="${escapeHtml(name)}" aria-pressed="${name === state.algorithm}" title="${escapeHtml(`${info.name} - ${info.family}`)}" class="${name === state.algorithm ? "active" : ""}">` +
         `${escapeHtml(shortAlgorithmLabel(name))}<small>${escapeHtml(shortFamilyLabel(info.family))}</small></button>`,
     )
     .join("");
@@ -1970,6 +1977,13 @@ async function renderRoadmap() {
     state.catalog = await response.json();
   } catch {
     state.catalog = Object.keys(algorithms).map((name) => ({ name, family: algorithms[name].family, status: "implemented" }));
+  }
+  let knownBacklog = [];
+  try {
+    const response = await fetch("./known_2d_backlog.json", { cache: "no-store" });
+    knownBacklog = await response.json();
+  } catch {
+    knownBacklog = [];
   }
   for (const entry of state.catalog) {
     const key = entry.name;
@@ -2004,8 +2018,14 @@ async function renderRoadmap() {
   renderAlgorithmButtons();
   renderComparison();
   const implemented = state.catalog.filter((entry) => entry.status === "implemented").length;
-  controls.roadmapSummary.textContent = `${implemented}/${state.catalog.length} implemented/tracked algorithms across graph search, routing, grid pruning, robotics, and optimization.`;
-  controls.roadmapRows.innerHTML = state.catalog
+  const coverageRows = [...state.catalog, ...knownBacklog];
+  const backlogCount = knownBacklog.length;
+  const knownTotal = coverageRows.length || state.catalog.length;
+  const percent = knownTotal ? Math.round((implemented / knownTotal) * 100) : 0;
+  controls.roadmapSummary.textContent =
+    `${implemented}/${knownTotal} known-applicable 2D algorithms covered (${percent}%). ` +
+    `${backlogCount} researched candidates remain queued across graph search, routing, robotics, sampling, geometry, optimization, and constraint families.`;
+  controls.roadmapRows.innerHTML = coverageRows
     .map(
       (entry) =>
         `<div class="roadmap-row"><span class="status-pill ${entry.status}">${entry.status}</span><strong>${entry.name}</strong><span>${entry.family}</span><em>${entry.time}</em></div>`,
@@ -2017,8 +2037,12 @@ controls.algorithmGroup.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-algorithm]");
   if (!(button instanceof HTMLButtonElement)) return;
   state.algorithm = button.dataset.algorithm;
-  document.querySelectorAll("[data-algorithm]").forEach((element) => element.classList.toggle("active", element === button));
-  generateMaze({ randomizeSeed: true });
+  document.querySelectorAll("[data-algorithm]").forEach((element) => {
+    const active = element === button;
+    element.classList.toggle("active", active);
+    element.setAttribute("aria-pressed", String(active));
+  });
+  if (controls.randomizeOnAlgorithm.checked) generateMaze({ randomizeSeed: true });
   run();
 });
 controls.algorithmSearch.addEventListener("input", renderAlgorithmButtons);
