@@ -298,7 +298,9 @@ button.primary {
   align-self: start;
   min-height: calc(100vh - 86px);
   display: grid;
-  place-items: center;
+  align-content: start;
+  justify-items: center;
+  gap: 14px;
   padding: 14px;
   background:
     linear-gradient(180deg, rgba(19, 29, 41, 0.96), rgba(7, 13, 19, 0.96)),
@@ -312,6 +314,81 @@ canvas {
   border-radius: 8px;
   background: #091017;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+}
+
+.algorithm-exhibit {
+  width: min(100%, calc(100vh - 130px));
+  box-sizing: border-box;
+  border: 1px solid rgba(53, 208, 199, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(53, 208, 199, 0.1), transparent 44%),
+    #101a25;
+  padding: 16px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+}
+
+.exhibit-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.exhibit-heading > div:first-child {
+  min-width: 0;
+}
+
+.exhibit-heading > div:first-child > span {
+  display: block;
+  color: #9fb0c3;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.exhibit-heading h2 {
+  margin-top: 4px;
+}
+
+.algorithm-exhibit p {
+  max-width: 76ch;
+  color: #c1cedd;
+}
+
+.exhibit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.exhibit-grid article {
+  min-width: 0;
+  border: 1px solid rgba(145, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(7, 13, 19, 0.46);
+  padding: 12px;
+}
+
+.exhibit-grid span {
+  display: block;
+  color: #9fb0c3;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.exhibit-grid strong,
+.exhibit-grid pre {
+  display: block;
+  margin: 7px 0 0;
+  color: #e8eef6;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.42;
+  white-space: pre-wrap;
 }
 
 .inspector section {
@@ -649,6 +726,10 @@ th {
     max-height: none;
   }
 
+  .algorithm-exhibit {
+    width: min(100%, 86vw);
+  }
+
   .math-heading {
     display: grid;
   }
@@ -668,6 +749,14 @@ th {
 }
 
 @media (max-width: 560px) {
+  .exhibit-heading {
+    display: grid;
+  }
+
+  .exhibit-grid {
+    grid-template-columns: 1fr;
+  }
+
   .math-grid {
     grid-template-columns: 1fr;
   }

@@ -78,6 +78,10 @@ try {
   assert.equal(await page.locator("#randomizeOnAlgorithm").isChecked(), false);
   assert.equal(await page.locator("#inspectorMathSummary").count(), 1);
   assert.equal(await page.locator(".algorithm-anatomy").count(), 1);
+  assert.equal(await page.locator(".algorithm-exhibit").count(), 1);
+  assert.match(await page.locator("#exhibitPlain").innerText(), /maze as a graph/i);
+  assert.match(await page.locator("#exhibitTrace").innerText(), /Frontier policy/i);
+  assert.match(await page.locator("#exhibitTradeoff").innerText(), /correctness|bias|fail|bound|visited/i);
   assert.equal(await page.locator("#algorithmExecutionBadge").innerText(), "native");
   assert.match(await page.locator("#anatomyFrontier").innerText(), /queue|frontier/i);
   assert.equal(await page.locator(".trace-legend").count(), 1);

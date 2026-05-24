@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.15
+
+- Added a persistent WebUI selected-algorithm lesson panel below the maze canvas
+  so every solver selection explains the idea, trace, best use, trade-off, and
+  core procedure in the main workspace.
+- Connected the lesson panel to native/projected execution status and existing
+  mathematical breakdowns so algorithm selection updates the educational copy.
+
 ## 0.2.14
 
 - Added a WebUI algorithm anatomy panel with frontier policy, cost model,

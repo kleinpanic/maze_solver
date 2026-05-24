@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver Museum</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.14" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.15" />
   </head>
   <body>
     <div class="app-shell">
@@ -109,6 +109,42 @@
             role="img"
             aria-label="Maze visualization with green start, red goal, cyan visits, amber frontier, purple goal-origin waves, and magenta path"
           ></canvas>
+          <section class="algorithm-exhibit" aria-label="Selected algorithm explanation">
+            <div class="exhibit-heading">
+              <div>
+                <span>Selected Algorithm</span>
+                <h2 id="exhibitTitle">Breadth-First Search</h2>
+              </div>
+              <div class="model-badges">
+                <span id="exhibitMode">native</span>
+                <span id="exhibitFamily">Unweighted graph search</span>
+              </div>
+            </div>
+            <p id="exhibitPlain">
+              Breadth-first search explores the maze in distance layers, so the first time it reaches the goal is the shortest unweighted route.
+            </p>
+            <div class="exhibit-grid">
+              <article>
+                <span>How To Read It</span>
+                <strong id="exhibitTrace">Cyan cells are explored by layer; amber cells are waiting in the frontier.</strong>
+              </article>
+              <article>
+                <span>Best Use</span>
+                <strong id="exhibitUse">Use it when every move has the same cost and shortest path length matters.</strong>
+              </article>
+              <article>
+                <span>Trade-Off</span>
+                <strong id="exhibitTradeoff">It is reliable but can visit a wide area before the goal is reached.</strong>
+              </article>
+              <article>
+                <span>Core Procedure</span>
+                <pre id="exhibitProcedure">enqueue start
+pop by FIFO layer
+record parent
+trace goal path</pre>
+              </article>
+            </div>
+          </section>
         </section>
 
         <aside class="sidebar inspector">
@@ -267,6 +303,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.14"></script>
+    <script type="module" src="./main.js?v=0.2.15"></script>
   </body>
 </html>

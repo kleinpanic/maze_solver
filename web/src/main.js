@@ -646,6 +646,14 @@ const controls = {
   generate: document.querySelector("#generate"),
   run: document.querySelector("#run"),
   status: document.querySelector("#status"),
+  exhibitTitle: document.querySelector("#exhibitTitle"),
+  exhibitMode: document.querySelector("#exhibitMode"),
+  exhibitFamily: document.querySelector("#exhibitFamily"),
+  exhibitPlain: document.querySelector("#exhibitPlain"),
+  exhibitTrace: document.querySelector("#exhibitTrace"),
+  exhibitUse: document.querySelector("#exhibitUse"),
+  exhibitTradeoff: document.querySelector("#exhibitTradeoff"),
+  exhibitProcedure: document.querySelector("#exhibitProcedure"),
   algorithmName: document.querySelector("#algorithmName"),
   algorithmNotes: document.querySelector("#algorithmNotes"),
   timeComplexity: document.querySelector("#timeComplexity"),
@@ -1898,6 +1906,49 @@ function executionMode(name) {
   return { label: "catalog", detail: "Catalog metadata" };
 }
 
+function sentence(value) {
+  const text = String(value).trim();
+  if (!text) return "";
+  return /[.!?]$/.test(text) ? text : `${text}.`;
+}
+
+function plainEnglish(info, breakdown, mode) {
+  const projection = mode.label === "projected" ? " In this browser exhibit it is projected through a related runnable solver, so compare the idea more than the exact trace." : "";
+  return `${info.name} treats the maze as a graph of open cells and passages. ${sentence(info.notes)} ${sentence(breakdown.summary)}${projection}`;
+}
+
+function bestUseText(info) {
+  const family = info.family;
+  if (info.name.includes("Dijkstra") || info.name.includes("Uniform-Cost")) return "Use it when moves or terrain can have different non-negative costs and the cheapest route matters.";
+  if (info.name.includes("A*")) return "Use it when you want shortest paths but also want the Manhattan heuristic to aim the search toward the goal.";
+  if (info.name.includes("Breadth") || info.name.includes("Lee")) return "Use it when every move has the same cost and you need a guaranteed shortest path.";
+  if (family.includes("Wall") || family.includes("Obstacle")) return "Use it to demonstrate local navigation rules and why topology assumptions matter.";
+  if (family.includes("Random")) return "Use it as a baseline that shows how bad unguided movement can be.";
+  if (family.includes("Depth")) return "Use it when memory pressure matters more than exploring in shortest-path order.";
+  if (family.includes("Dynamic") || family.includes("Queue relaxation")) return "Use it to study relaxation: distances improve as edges repeatedly update neighbors.";
+  if (family.includes("Constraint") || family.includes("Optimization")) return "Use it to view maze solving as selecting a path that satisfies a formal model.";
+  if (family.includes("Sampling")) return "Use it to connect maze solving to robotics planners that reason through sampled milestones.";
+  if (family.includes("Maze reduction")) return "Use it to see how simplifying the maze can expose the surviving route structure.";
+  return `Use it to compare ${family.toLowerCase()} behavior against shortest-path graph search.`;
+}
+
+function tradeoffText(info) {
+  const family = info.family;
+  if (info.time.includes("Unbounded")) return "There is no useful worst-case stopping bound here; the random walk can wander for a very long time.";
+  if (info.optimal === "Yes" && info.complete === "Yes") return "It pays for correctness with more bookkeeping or a broader frontier.";
+  if (info.complete !== "Yes") return "It is educational because it can fail under the wrong maze topology or assumptions.";
+  if (family.includes("Heuristic")) return "It usually looks focused, but non-admissible or greedy choices can miss the shortest route.";
+  if (family.includes("Wall")) return "It is simple and visual, but it does not reason globally about the maze.";
+  if (family.includes("Depth")) return "It saves memory, but repeated or deep exploration can cost a lot of time.";
+  return "It highlights a different search bias; compare visited cells, path length, and calculated bound against BFS and Dijkstra.";
+}
+
+function traceReadingText(name, info, breakdown, mode) {
+  const origin = traceOrigin(name, info);
+  const projection = mode.label === "projected" ? " The badge marks that this trace is a projection, not a full native implementation." : "";
+  return `${origin}. ${breakdown.watch} Frontier policy: ${frontierPolicy(info, breakdown)}.${projection}`;
+}
+
 function updateMetrics() {
   const info = algorithms[state.algorithm];
   const breakdown = breakdowns[state.algorithm] ?? {
@@ -1936,6 +1987,15 @@ function updateMetrics() {
   controls.junctions.textContent = mazeStats.junctions;
   controls.corridorBias.textContent = mazeStats.corridorBias;
   const mode = executionMode(state.algorithm);
+  controls.exhibitTitle.textContent = info.name;
+  controls.exhibitMode.textContent = mode.label;
+  controls.exhibitMode.className = `mode-${mode.label}`;
+  controls.exhibitFamily.textContent = info.family;
+  controls.exhibitPlain.textContent = plainEnglish(info, breakdown, mode);
+  controls.exhibitTrace.textContent = traceReadingText(state.algorithm, info, breakdown, mode);
+  controls.exhibitUse.textContent = bestUseText(info);
+  controls.exhibitTradeoff.textContent = tradeoffText(info);
+  controls.exhibitProcedure.textContent = breakdown.procedure;
   controls.algorithmFamilyBadge.textContent = info.family;
   controls.algorithmExecutionBadge.textContent = mode.label;
   controls.algorithmExecutionBadge.className = `mode-${mode.label}`;
