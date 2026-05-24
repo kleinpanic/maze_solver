@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+- Added a WebUI generation model panel with family, perfect-maze claim, complexity, mathematical model, bias, invariant, and procedure notes for every maze generator.
+- Added live maze-structure metrics for wall ratio, dead ends, junctions, and corridor bias so generation algorithms can be compared visually and numerically.
+- Updated documentation to expose generator complexity and theory beside the solver catalog.
+
 ## 0.2.2
 
 - Expanded the WebUI generator catalog with Wilson, Aldous-Broder, Hunt and Kill, and Eller's algorithm so the browser museum matches the Python generator core.

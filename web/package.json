@@ -1,12 +1,12 @@
 {
   "name": "maze-solver-web",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && cp index.html dist/index.html && cp src/main.js dist/main.js && cp favicon.svg dist/favicon.svg",
+    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && cp index.html dist/index.html && cp src/main.js dist/main.js && cp src/mazeStats.js dist/mazeStats.js && cp favicon.svg dist/favicon.svg",
     "dev": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
-    "test": "node --check src/main.js"
+    "test": "node --check src/main.js && node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.0",

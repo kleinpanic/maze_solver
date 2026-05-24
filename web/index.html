@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.2" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.3" />
   </head>
   <body>
     <div class="app-shell">
@@ -105,6 +105,10 @@
             <div><span>Work / Path</span><strong id="workFactor">0.00</strong></div>
             <div><span>Events</span><strong id="eventCount">0</strong></div>
             <div><span>Open Cells</span><strong id="openCells">0</strong></div>
+            <div><span>Walls</span><strong id="wallRatio">0%</strong></div>
+            <div><span>Dead Ends</span><strong id="deadEnds">0</strong></div>
+            <div><span>Junctions</span><strong id="junctions">0</strong></div>
+            <div><span>Corridor Bias</span><strong id="corridorBias">0.00</strong></div>
           </section>
 
           <section>
@@ -117,6 +121,41 @@
             </table>
           </section>
         </aside>
+
+        <section class="math-panel generator-panel">
+          <div class="math-heading">
+            <div>
+              <h3 id="generatorName">Recursive Backtracker</h3>
+              <p id="generatorSummary">Depth-first spanning-tree construction over odd grid cells.</p>
+            </div>
+            <div class="model-badges">
+              <span id="generatorFamily">Spanning tree</span>
+              <span id="generatorPerfect">Perfect maze</span>
+              <span id="generatorTime">O(V + E)</span>
+            </div>
+          </div>
+          <div class="math-grid">
+            <article>
+              <span>Model</span>
+              <strong id="generatorModel">Randomized DFS on the cell graph.</strong>
+            </article>
+            <article>
+              <span>Bias</span>
+              <strong id="generatorBias">Long corridors and low branching.</strong>
+            </article>
+            <article>
+              <span>Invariant</span>
+              <strong id="generatorInvariant">Every carved cell is connected to the start tree.</strong>
+            </article>
+            <article>
+              <span>Procedure</span>
+              <pre id="generatorProcedure">push start
+choose unvisited neighbor
+carve wall
+backtrack on dead ends</pre>
+            </article>
+          </div>
+        </section>
 
         <section class="math-panel">
           <div class="math-heading">
@@ -153,6 +192,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.2"></script>
+    <script type="module" src="./main.js?v=0.2.3"></script>
   </body>
 </html>

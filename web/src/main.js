@@ -1,3 +1,5 @@
+import { mazeStatistics } from "./mazeStats.js";
+
 const WALL = 1;
 const OPEN = 0;
 
@@ -368,6 +370,130 @@ const breakdowns = {
   },
 };
 
+const generatorDetails = {
+  "Recursive Backtracker": {
+    name: "Recursive Backtracker",
+    family: "Depth-first spanning tree",
+    perfect: "Perfect maze",
+    time: "O(V + E)",
+    summary: "Randomized depth-first search carves a spanning tree through the odd-cell grid.",
+    model: "DFS tree over grid cells; each passage is a tree edge.",
+    bias: "Long corridors, low branching, and pronounced backtracking structure.",
+    invariant: "Every carved cell remains connected to the root and no carved cell is visited twice.",
+    procedure: "push start\nchoose an unvisited two-step neighbor\ncarve the separating wall\nbacktrack when no options remain",
+  },
+  "Prim's": {
+    name: "Randomized Prim's Algorithm",
+    family: "Frontier spanning tree",
+    perfect: "Perfect maze",
+    time: "O(V^2) list frontier",
+    summary: "A randomized frontier grows one connected maze tree by attaching boundary cells.",
+    model: "Randomized minimum-spanning-tree analogue with equal edge weights.",
+    bias: "Bushier than DFS, with shorter corridors and more local branching.",
+    invariant: "The open region is always one connected component and each new cell joins it once.",
+    procedure: "seed one cell\ncollect frontier walls\nsample a frontier cell\nattach it to the carved component",
+  },
+  Kruskal: {
+    name: "Randomized Kruskal's Algorithm",
+    family: "Disjoint-set spanning tree",
+    perfect: "Perfect maze",
+    time: "O(E log V) implementation",
+    summary: "Shuffled grid edges are accepted only when they join separate components.",
+    model: "Union-find over cells, producing an acyclic spanning tree.",
+    bias: "Balanced global texture with fewer extreme corridors than DFS.",
+    invariant: "Union-find rejects every edge that would create a cycle.",
+    procedure: "make each cell a set\nshuffle candidate walls\nunion separated components\ncarve accepted walls",
+  },
+  Wilson: {
+    name: "Wilson's Algorithm",
+    family: "Uniform spanning tree",
+    perfect: "Perfect maze",
+    time: "Expected cover-time dependent",
+    summary: "Loop-erased random walks add unbiased branches to a uniform spanning tree.",
+    model: "Loop-erased random walk sampled until it hits the existing tree.",
+    bias: "Statistically uniform over spanning trees; local texture can still vary strongly.",
+    invariant: "Only loop-erased walks are committed, so the carved graph remains a tree.",
+    procedure: "start with one tree cell\nwalk randomly from an outside cell\nerase loops in the walk\ncommit the walk into the tree",
+  },
+  "Aldous-Broder": {
+    name: "Aldous-Broder Algorithm",
+    family: "Uniform spanning tree",
+    perfect: "Perfect maze",
+    time: "Expected cover-time dependent",
+    summary: "A random walk records the first entrance edge for every cell to sample a uniform tree.",
+    model: "Markov-chain cover process over the grid cell graph.",
+    bias: "Uniform spanning-tree distribution but slower convergence on large grids.",
+    invariant: "Only first visits carve passages, so each cell receives one parent edge.",
+    procedure: "walk randomly from any cell\nwhen a new cell is first reached\ncarve the entrance edge\nstop after all cells are covered",
+  },
+  "Hunt and Kill": {
+    name: "Hunt and Kill",
+    family: "DFS and scan hybrid",
+    perfect: "Perfect maze",
+    time: "O(V^2) scan worst case",
+    summary: "Random walks carve until trapped, then a grid scan hunts for a new frontier cell.",
+    model: "Depth-first growth restarted by deterministic frontier discovery.",
+    bias: "DFS-like corridors with visible scan-driven restarts.",
+    invariant: "Every restart connects an unvisited cell to the existing carved component.",
+    procedure: "walk randomly while possible\nscan for an unvisited cell near the maze\nconnect that cell\nresume random walking",
+  },
+  "Growing Tree": {
+    name: "Growing Tree",
+    family: "Active-list spanning tree",
+    perfect: "Perfect maze",
+    time: "O(V + E)",
+    summary: "An active frontier chooses recent cells most of the time and random cells sometimes.",
+    model: "Parameterized frontier process between DFS and Prim behavior.",
+    bias: "Hybrid texture: long corridors with occasional bushy expansion.",
+    invariant: "Active cells are carved cells that may still expose unvisited neighbors.",
+    procedure: "keep an active list\nsample newest or random active cell\ncarve one unvisited neighbor\nremove exhausted cells",
+  },
+  "Binary Tree": {
+    name: "Binary Tree",
+    family: "Directional carving",
+    perfect: "Perfect maze",
+    time: "O(V)",
+    summary: "Each cell opens either north or east, creating a fast directional spanning tree.",
+    model: "One-pass acyclic orientation over the grid.",
+    bias: "Strong diagonal bias with easy north/east drift.",
+    invariant: "Each cell carves at most one outgoing edge, avoiding cycles under the chosen orientation.",
+    procedure: "scan cells once\nopen each cell\nchoose north or east when legal\ncarve that passage",
+  },
+  Sidewinder: {
+    name: "Sidewinder",
+    family: "Row-run carving",
+    perfect: "Perfect maze",
+    time: "O(V)",
+    summary: "Horizontal runs are extended across each row, then one cell in each run connects upward.",
+    model: "Streaming row algorithm with guaranteed vertical set connections.",
+    bias: "Long east-west corridors and a distinct top-row highway.",
+    invariant: "Every completed run has at least one connection to the row above, except the first row.",
+    procedure: "scan a row\nextend the current run east\nor close it by carving north\nstart the next run",
+  },
+  Eller: {
+    name: "Eller's Algorithm",
+    family: "Row-wise disjoint sets",
+    perfect: "Perfect maze",
+    time: "O(VW) row-set merges",
+    summary: "Rows carry set labels forward so the maze can be generated with small streaming memory.",
+    model: "Disjoint-set connectivity maintained one row at a time.",
+    bias: "Balanced row texture with controllable horizontal and vertical joins.",
+    invariant: "Each set receives at least one downward connection before the next row.",
+    procedure: "assign row sets\nrandomly merge horizontal neighbors\ncarve at least one vertical per set\nforce final-row merges",
+  },
+  "Recursive Division": {
+    name: "Recursive Division",
+    family: "Recursive wall partitioning",
+    perfect: "Solvable partitions",
+    time: "O(V log V)",
+    summary: "Open space is split by recursive walls, each wall leaving one passage through the partition.",
+    model: "Divide-and-conquer subdivision over rectangular regions.",
+    bias: "Long straight walls and room-like chambers instead of tree corridors.",
+    invariant: "Every new wall leaves a passage, preserving global reachability.",
+    procedure: "start open inside the border\nchoose a split orientation\nbuild a wall with one gap\nrecurse on both subregions",
+  },
+};
+
 let state = {
   maze: null,
   algorithm: "BFS",
@@ -406,6 +532,19 @@ const controls = {
   workFactor: document.querySelector("#workFactor"),
   eventCount: document.querySelector("#eventCount"),
   openCells: document.querySelector("#openCells"),
+  wallRatio: document.querySelector("#wallRatio"),
+  deadEnds: document.querySelector("#deadEnds"),
+  junctions: document.querySelector("#junctions"),
+  corridorBias: document.querySelector("#corridorBias"),
+  generatorName: document.querySelector("#generatorName"),
+  generatorSummary: document.querySelector("#generatorSummary"),
+  generatorFamily: document.querySelector("#generatorFamily"),
+  generatorPerfect: document.querySelector("#generatorPerfect"),
+  generatorTime: document.querySelector("#generatorTime"),
+  generatorModel: document.querySelector("#generatorModel"),
+  generatorBias: document.querySelector("#generatorBias"),
+  generatorInvariant: document.querySelector("#generatorInvariant"),
+  generatorProcedure: document.querySelector("#generatorProcedure"),
   mathSummary: document.querySelector("#mathSummary"),
   graphModel: document.querySelector("#graphModel"),
   costModel: document.querySelector("#costModel"),
@@ -1337,7 +1476,8 @@ function updateMetrics() {
     procedure: "Run the solver and inspect the event trace.",
     watch: "Compare visited cells, frontier pressure, and path length.",
   };
-  const openCount = state.maze ? state.maze.flat().filter((value) => value === OPEN).length : 0;
+  const mazeStats = mazeStatistics(state.maze);
+  const openCount = mazeStats.open;
   const coverage = openCount ? Math.round((state.visited.size / openCount) * 100) : 0;
   const workFactor = state.path.length ? (state.visited.size / state.path.length).toFixed(2) : "0.00";
   controls.algorithmName.textContent = info.name;
@@ -1354,6 +1494,20 @@ function updateMetrics() {
   controls.workFactor.textContent = workFactor;
   controls.eventCount.textContent = state.events.length;
   controls.openCells.textContent = openCount;
+  controls.wallRatio.textContent = `${mazeStats.wallRatio}%`;
+  controls.deadEnds.textContent = mazeStats.deadEnds;
+  controls.junctions.textContent = mazeStats.junctions;
+  controls.corridorBias.textContent = mazeStats.corridorBias;
+  const generator = generatorDetails[controls.generator.value];
+  controls.generatorName.textContent = generator.name;
+  controls.generatorSummary.textContent = generator.summary;
+  controls.generatorFamily.textContent = generator.family;
+  controls.generatorPerfect.textContent = generator.perfect;
+  controls.generatorTime.textContent = generator.time;
+  controls.generatorModel.textContent = generator.model;
+  controls.generatorBias.textContent = generator.bias;
+  controls.generatorInvariant.textContent = generator.invariant;
+  controls.generatorProcedure.textContent = generator.procedure;
   controls.mathSummary.textContent = breakdown.summary;
   controls.graphModel.textContent = breakdown.graph;
   controls.costModel.textContent = breakdown.cost;
@@ -1379,6 +1533,7 @@ controls.algorithmGroup.addEventListener("click", (event) => {
   updateMetrics();
 });
 controls.generate.addEventListener("click", generateMaze);
+controls.generator.addEventListener("change", generateMaze);
 controls.run.addEventListener("click", run);
 renderComparison();
 generateMaze();

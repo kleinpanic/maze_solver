@@ -30,19 +30,19 @@ The Python core and WebUI share the same named solver and generator catalog so b
 
 ## Generators
 
-| Algorithm | Family | Perfect Maze | Texture |
-| --- | --- | --- | --- |
-| Recursive Backtracker | Depth-first spanning tree | Yes | Long corridors and dramatic backtracking. |
-| Randomized Prim | Frontier spanning tree | Yes | Dense, bushy branch structure. |
-| Randomized Kruskal | Disjoint-set spanning tree | Yes | Evenly shuffled carved walls. |
-| Wilson's Algorithm | Uniform spanning tree | Yes | Mathematically uniform spanning-tree sampling through loop-erased walks. |
-| Aldous-Broder | Uniform spanning tree | Yes | Uniform sampling through a simple random walk. |
-| Hunt and Kill | Depth-first scan hybrid | Yes | Walks until stuck, then hunts for a fresh frontier. |
-| Binary Tree | Directional biased generation | Yes | Fast diagonal bias, useful as a baseline. |
-| Sidewinder | Row-run generation | Yes | Row-wise runs with northern connections. |
-| Growing Tree | Configurable frontier growth | Yes | A tunable blend of newest-cell and random frontier behavior. |
-| Eller's Algorithm | Row-wise set merging | Yes | Builds one row at a time while preserving set connectivity. |
-| Recursive Division | Wall subdivision | No | Starts open and recursively adds walls with single passages. |
+| Algorithm | Family | Perfect Maze | Time | Model | Texture |
+| --- | --- | --- | --- | --- | --- |
+| Recursive Backtracker | Depth-first spanning tree | Yes | `O(V + E)` | Randomized DFS over the odd-cell graph. | Long corridors and dramatic backtracking. |
+| Randomized Prim | Frontier spanning tree | Yes | `O(V^2)` in this random-list implementation | Grows one connected component from sampled frontier walls. | Dense, bushy branch structure. |
+| Randomized Kruskal | Disjoint-set spanning tree | Yes | `O(E log V)` in this implementation | Union-find accepts only component-joining edges. | Evenly shuffled carved walls. |
+| Wilson's Algorithm | Uniform spanning tree | Yes | Expected cover-time dependent | Loop-erased random walks join an existing tree. | Mathematically uniform spanning-tree sampling. |
+| Aldous-Broder | Uniform spanning tree | Yes | Expected cover-time dependent | Random walk records first-entrance edges. | Uniform sampling through a simple random walk. |
+| Hunt and Kill | Depth-first scan hybrid | Yes | `O(V^2)` scan worst case | Random walk restarts through deterministic frontier scans. | Walks until stuck, then hunts for a fresh frontier. |
+| Binary Tree | Directional biased generation | Yes | `O(V)` | One-pass north/east oriented carving. | Fast diagonal bias, useful as a baseline. |
+| Sidewinder | Row-run generation | Yes | `O(V)` | Streaming horizontal runs with upward closure. | Row-wise runs with northern connections. |
+| Growing Tree | Configurable frontier growth | Yes | `O(V + E)` | Active-list frontier between DFS and Prim behavior. | A tunable blend of newest-cell and random frontier behavior. |
+| Eller's Algorithm | Row-wise set merging | Yes | `O(VW)` for current row-set remapping | Row-local set labels preserve connectivity. | Builds one row at a time while preserving set connectivity. |
+| Recursive Division | Wall subdivision | No | `O(V log V)` typical subdivision | Divide-and-conquer wall placement with one passage per wall. | Starts open and recursively adds walls with single passages. |
 
 ## References
 
