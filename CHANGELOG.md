@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Added versioned WebUI asset URLs so GitHub Pages clients pick up the latest CSS and JavaScript immediately after deployment.
+
 ## 0.1.2
 
 - Fixed desktop WebUI canvas alignment so the maze stays visible near the top of the stage beside the full comparison table.
