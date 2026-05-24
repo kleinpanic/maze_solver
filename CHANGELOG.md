@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+- Expanded the solver catalog with Lee, Flood Fill, SPFA, left-hand and right-hand wall followers, Tremaux, Pledge, and Random Mouse.
+- Added WebUI Big-O, space complexity, completeness, optimality, coverage, work-factor, event-count, and open-cell metrics.
+- Changed the WebUI to generate a fresh random solvable maze on first load while keeping explicit seeds reproducible.
+- Improved high-speed WebUI animation by batching events for larger algorithm traces.
+- Added automated GitHub releases for version tags with Python and WebUI artifacts.
+
 ## 0.1.0
 
 - Added a packaged maze core with registries for solver and generator algorithms.

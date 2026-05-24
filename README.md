@@ -19,25 +19,34 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 - Real-time visualization of visited cells, frontier cells, and final paths.
 - Deterministic maze generation with seeds.
 - Shared Python package under `src/maze_solver`.
-- Browser-side educational WebUI with Canvas animation, metrics, and an algorithm comparison table.
+- Browser-side educational WebUI with Canvas animation, Big-O notes, runtime metrics, and an algorithm comparison table.
 - CI for Python 3.11, 3.12, and 3.13.
 - GitHub Pages deployment from `web/dist`.
+- Automated tagged releases for `v*` tags, including Python distributions and a zipped WebUI build.
 - CodeQL, dependency review, and Dependabot configuration.
 
 ## Solver Catalog
 
-| Algorithm | Complete | Optimal | Weighted | Time |
-| --- | --- | --- | --- | --- |
-| Breadth-First Search | Yes | Yes | No | `O(V + E)` |
-| Depth-First Search | Yes | No | No | `O(V + E)` |
-| A* Search | Yes | Yes | Yes | `O(E log V)` |
-| Dijkstra's Algorithm | Yes | Yes | Yes | `O((V + E) log V)` |
-| Uniform-Cost Search | Yes | Yes | Yes | `O((V + E) log V)` |
-| Bidirectional BFS | Yes | Yes | No | `O(b^(d/2))` idealized |
-| Greedy Best-First Search | Yes | No | No | `O(E log V)` |
-| Iterative Deepening DFS | Yes | Yes | No | `O(b^d)` |
-| Bellman-Ford | Yes | Yes | Yes | `O(VE)` |
-| Dead-End Filling | Yes | No | No | `O(V + E)` |
+| Algorithm | Complete | Optimal | Weighted | Time | Space |
+| --- | --- | --- | --- | --- | --- |
+| Breadth-First Search | Yes | Yes | No | `O(V + E)` | `O(V)` |
+| Lee Algorithm | Yes | Yes | No | `O(V + E)` | `O(V)` |
+| Depth-First Search | Yes | No | No | `O(V + E)` | `O(V)` |
+| Flood Fill Solver | Yes | Yes | No | `O(V + E)` | `O(V)` |
+| A* Search | Yes | Yes | Yes | `O(E log V)` | `O(V)` |
+| Dijkstra's Algorithm | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` |
+| Uniform-Cost Search | Yes | Yes | Yes | `O((V + E) log V)` | `O(V)` |
+| SPFA | Yes | Yes | Yes | `O(VE)` worst case | `O(V)` |
+| Bidirectional BFS | Yes | Yes | No | `O(b^(d/2))` idealized | `O(b^(d/2))` |
+| Greedy Best-First Search | Yes | No | No | `O(E log V)` | `O(V)` |
+| Left-Hand Wall Follower | Topology-dependent | No | No | `O(k)` | `O(k)` |
+| Right-Hand Wall Follower | Topology-dependent | No | No | `O(k)` | `O(k)` |
+| Tremaux's Algorithm | Yes | No | No | `O(V + E)` | `O(V + E)` |
+| Pledge Algorithm | Topology-dependent | No | No | `O(k)` | `O(k)` |
+| Iterative Deepening Depth-First Search | Yes | Yes | No | `O(b^d)` | `O(d)` |
+| Bellman-Ford | Yes | Yes | Yes | `O(VE)` | `O(V)` |
+| Dead-End Filling | Yes | No | No | `O(V + E)` | `O(V)` |
+| Random Mouse | No | No | No | Unbounded | `O(k)` |
 
 ## Generator Catalog
 
@@ -66,10 +75,11 @@ Run the WebUI locally:
 cd web
 npm ci
 npm run build
-python3 -m http.server 4173 --directory dist
+cd ..
+maze-solver-web
 ```
 
-Then open <http://127.0.0.1:4173/>.
+Then open the URL printed by the command. It starts at port `4173`, falls forward when the port is busy, and stops cleanly on Ctrl-C.
 
 ## Development
 
@@ -89,6 +99,15 @@ cd web
 npm test
 npm run build
 ```
+
+Create a release:
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+The `Release` workflow verifies Python and WebUI checks before publishing the GitHub release.
 
 ## Repository Layout
 

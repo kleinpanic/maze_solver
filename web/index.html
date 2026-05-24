@@ -39,15 +39,23 @@
             <span>Solver</span>
             <div class="segments" id="algorithmGroup">
               <button data-algorithm="BFS" class="active">BFS</button>
+              <button data-algorithm="Lee">Lee</button>
               <button data-algorithm="DFS">DFS</button>
+              <button data-algorithm="Flood Fill">Flood</button>
               <button data-algorithm="A*">A*</button>
               <button data-algorithm="Dijkstra">Dijkstra</button>
               <button data-algorithm="UCS">UCS</button>
+              <button data-algorithm="SPFA">SPFA</button>
               <button data-algorithm="Bidirectional BFS">Bi-BFS</button>
               <button data-algorithm="Greedy Best-First">Greedy</button>
+              <button data-algorithm="Left-Hand Rule">Left</button>
+              <button data-algorithm="Right-Hand Rule">Right</button>
+              <button data-algorithm="Tremaux">Tremaux</button>
+              <button data-algorithm="Pledge">Pledge</button>
               <button data-algorithm="IDDFS">IDDFS</button>
               <button data-algorithm="Bellman-Ford">Bellman</button>
               <button data-algorithm="Dead-End Filling">Dead-End</button>
+              <button data-algorithm="Random Mouse">Random</button>
             </div>
           </div>
 
@@ -56,7 +64,7 @@
             <label>Cols <input id="cols" type="number" min="5" max="101" step="2" value="31" /></label>
           </div>
 
-          <label>Seed <input id="seed" type="number" value="2026" /></label>
+          <label>Seed <input id="seed" type="number" placeholder="random" /></label>
           <label>Wall density <input id="density" type="range" min="0" max="0.7" step="0.05" value="0.2" /></label>
           <label>Speed <input id="speed" type="range" min="1" max="60" step="1" value="18" /></label>
 
@@ -76,18 +84,29 @@
             <p id="algorithmNotes">Shortest path by edge count in unweighted mazes.</p>
           </section>
 
+          <section class="theory">
+            <div><span>Time</span><strong id="timeComplexity">O(V + E)</strong></div>
+            <div><span>Space</span><strong id="spaceComplexity">O(V)</strong></div>
+            <div><span>Complete</span><strong id="completeClaim">Yes</strong></div>
+            <div><span>Optimal</span><strong id="optimalClaim">Yes</strong></div>
+          </section>
+
           <section class="metrics">
             <div><span>Path</span><strong id="pathLength">0</strong></div>
             <div><span>Visited</span><strong id="visitedCount">0</strong></div>
             <div><span>Frontier</span><strong id="frontierPeak">0</strong></div>
             <div><span>Steps</span><strong id="stepCount">0</strong></div>
+            <div><span>Coverage</span><strong id="coverageRatio">0%</strong></div>
+            <div><span>Work / Path</span><strong id="workFactor">0.00</strong></div>
+            <div><span>Events</span><strong id="eventCount">0</strong></div>
+            <div><span>Open Cells</span><strong id="openCells">0</strong></div>
           </section>
 
           <section>
             <h3>Comparison</h3>
             <table>
               <thead>
-                <tr><th>Algorithm</th><th>Family</th><th>Optimal</th><th>Time</th></tr>
+                <tr><th>Algorithm</th><th>Family</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th></tr>
               </thead>
               <tbody id="comparisonRows"></tbody>
             </table>

@@ -214,10 +214,12 @@ p {
   line-height: 1.5;
 }
 
+.theory,
 .metrics {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.theory div,
 .metrics div {
   border: 1px solid rgba(145, 163, 184, 0.14);
   border-radius: 8px;
@@ -225,15 +227,25 @@ p {
   background: #101a25;
 }
 
+.theory span,
 .metrics span {
   display: block;
   color: #9fb0c3;
   font-size: 12px;
 }
 
+.theory strong,
 .metrics strong {
   display: block;
   margin-top: 4px;
+}
+
+.theory strong {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.metrics strong {
   font-size: 24px;
 }
 
@@ -272,5 +284,40 @@ th {
   canvas {
     width: min(100%, 86vw);
     max-height: none;
+  }
+}
+
+@media (max-width: 560px) {
+  table,
+  thead,
+  tbody,
+  tr,
+  td {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    border-bottom: 1px solid rgba(145, 163, 184, 0.18);
+    padding: 10px 0;
+  }
+
+  td {
+    border-bottom: 0;
+    display: grid;
+    grid-template-columns: 86px 1fr;
+    gap: 10px;
+    padding: 4px 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    color: #9fb0c3;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
   }
 }

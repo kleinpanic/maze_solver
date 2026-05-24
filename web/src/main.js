@@ -8,7 +8,19 @@ const algorithms = {
     optimal: "Yes",
     weighted: "No",
     time: "O(V + E)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Shortest path by edge count in unweighted mazes.",
+  },
+  Lee: {
+    name: "Lee Algorithm",
+    family: "Wavefront routing",
+    optimal: "Yes",
+    weighted: "No",
+    time: "O(V + E)",
+    space: "O(V)",
+    complete: "Yes",
+    notes: "Grid-routing wave expansion; BFS under the maze's unit-cost model.",
   },
   DFS: {
     name: "Depth-First Search",
@@ -16,7 +28,19 @@ const algorithms = {
     optimal: "No",
     weighted: "No",
     time: "O(V + E)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Explores deeply first; useful contrast against shortest-path solvers.",
+  },
+  "Flood Fill": {
+    name: "Flood Fill Solver",
+    family: "Distance transform",
+    optimal: "Yes",
+    weighted: "No",
+    time: "O(V + E)",
+    space: "O(V)",
+    complete: "Yes",
+    notes: "Fills distances from the goal, then follows the decreasing distance gradient.",
   },
   "A*": {
     name: "A* Search",
@@ -24,6 +48,8 @@ const algorithms = {
     optimal: "Yes",
     weighted: "Yes",
     time: "O(E log V)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Uses Manhattan distance as an admissible heuristic on 4-neighbor grids.",
   },
   Dijkstra: {
@@ -32,6 +58,8 @@ const algorithms = {
     optimal: "Yes",
     weighted: "Yes",
     time: "O((V + E) log V)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Finds shortest paths with non-negative edge costs.",
   },
   UCS: {
@@ -40,7 +68,19 @@ const algorithms = {
     optimal: "Yes",
     weighted: "Yes",
     time: "O((V + E) log V)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Expands the cheapest known path first; equivalent to Dijkstra on this grid.",
+  },
+  SPFA: {
+    name: "Shortest Path Faster Algorithm",
+    family: "Queue relaxation",
+    optimal: "Yes",
+    weighted: "Yes",
+    time: "O(VE)",
+    space: "O(V)",
+    complete: "Yes",
+    notes: "Queue-driven Bellman-Ford relaxation that revisits only changed vertices.",
   },
   "Bidirectional BFS": {
     name: "Bidirectional BFS",
@@ -48,6 +88,8 @@ const algorithms = {
     optimal: "Yes",
     weighted: "No",
     time: "O(b^(d/2))",
+    space: "O(b^(d/2))",
+    complete: "Yes",
     notes: "Searches from start and goal simultaneously until the waves meet.",
   },
   "Greedy Best-First": {
@@ -56,7 +98,49 @@ const algorithms = {
     optimal: "No",
     weighted: "No",
     time: "O(E log V)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Chases the cell with the smallest Manhattan distance to the goal.",
+  },
+  "Left-Hand Rule": {
+    name: "Left-Hand Wall Follower",
+    family: "Wall following",
+    optimal: "No",
+    weighted: "No",
+    time: "O(k)",
+    space: "O(k)",
+    complete: "Topology",
+    notes: "Keeps the left hand on a wall; works under specific maze topology assumptions.",
+  },
+  "Right-Hand Rule": {
+    name: "Right-Hand Wall Follower",
+    family: "Wall following",
+    optimal: "No",
+    weighted: "No",
+    time: "O(k)",
+    space: "O(k)",
+    complete: "Topology",
+    notes: "The mirrored wall follower, useful for seeing how wall-connectedness matters.",
+  },
+  Tremaux: {
+    name: "Tremaux's Algorithm",
+    family: "Passage marking",
+    optimal: "No",
+    weighted: "No",
+    time: "O(V + E)",
+    space: "O(V + E)",
+    complete: "Yes",
+    notes: "Marks passages while backtracking, avoiding endless wandering in loopy mazes.",
+  },
+  Pledge: {
+    name: "Pledge Algorithm",
+    family: "Obstacle avoidance",
+    optimal: "No",
+    weighted: "No",
+    time: "O(k)",
+    space: "O(k)",
+    complete: "Topology",
+    notes: "Combines a preferred heading with wall following and turn-sum accounting.",
   },
   IDDFS: {
     name: "Iterative Deepening DFS",
@@ -64,6 +148,8 @@ const algorithms = {
     optimal: "Yes",
     weighted: "No",
     time: "O(b^d)",
+    space: "O(d)",
+    complete: "Yes",
     notes: "Repeats DFS with larger depth limits to keep memory low.",
   },
   "Bellman-Ford": {
@@ -72,6 +158,8 @@ const algorithms = {
     optimal: "Yes",
     weighted: "Yes",
     time: "O(VE)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Relaxes every edge repeatedly, making shortest-path work visible.",
   },
   "Dead-End Filling": {
@@ -80,7 +168,19 @@ const algorithms = {
     optimal: "No",
     weighted: "No",
     time: "O(V + E)",
+    space: "O(V)",
+    complete: "Yes",
     notes: "Prunes cul-de-sacs before tracing through the remaining corridors.",
+  },
+  "Random Mouse": {
+    name: "Random Mouse",
+    family: "Random walk",
+    optimal: "No",
+    weighted: "No",
+    time: "Unbounded",
+    space: "O(k)",
+    complete: "No",
+    notes: "Chooses a legal neighbor at random; intentionally weak as a baseline.",
   },
 };
 
@@ -90,6 +190,7 @@ let state = {
   path: [],
   visited: new Set(),
   frontier: new Set(),
+  frontierPeak: 0,
   events: [],
   timer: null,
   step: 0,
@@ -109,10 +210,18 @@ const controls = {
   status: document.querySelector("#status"),
   algorithmName: document.querySelector("#algorithmName"),
   algorithmNotes: document.querySelector("#algorithmNotes"),
+  timeComplexity: document.querySelector("#timeComplexity"),
+  spaceComplexity: document.querySelector("#spaceComplexity"),
+  completeClaim: document.querySelector("#completeClaim"),
+  optimalClaim: document.querySelector("#optimalClaim"),
   pathLength: document.querySelector("#pathLength"),
   visitedCount: document.querySelector("#visitedCount"),
   frontierPeak: document.querySelector("#frontierPeak"),
   stepCount: document.querySelector("#stepCount"),
+  coverageRatio: document.querySelector("#coverageRatio"),
+  workFactor: document.querySelector("#workFactor"),
+  eventCount: document.querySelector("#eventCount"),
+  openCells: document.querySelector("#openCells"),
   comparisonRows: document.querySelector("#comparisonRows"),
   algorithmGroup: document.querySelector("#algorithmGroup"),
 };
@@ -331,7 +440,7 @@ function generateMaze() {
   const cols = odd(controls.cols.value);
   controls.rows.value = rows;
   controls.cols.value = cols;
-  const random = rng(Number(controls.seed.value) || 2026);
+  const baseSeed = controls.seed.value === "" ? Math.floor(Math.random() * 1_000_000_000) : Number(controls.seed.value);
   const generator = controls.generator.value;
   const generators = {
     "Recursive Backtracker": generateRecursive,
@@ -342,17 +451,33 @@ function generateMaze() {
     Sidewinder: generateSidewinder,
     "Recursive Division": generateRecursiveDivision,
   };
-  const maze = generators[generator](rows, cols, random);
-  const density = Number(controls.density.value);
-  for (let r = 1; r < rows - 1; r++) {
-    for (let c = 1; c < cols - 1; c++) {
-      if ((r === 1 && c === 1) || (r === rows - 2 && c === cols - 2)) continue;
-      if (maze[r][c] === OPEN && random() < density * 0.03) maze[r][c] = WALL;
+  let maze = null;
+  let usedSeed = baseSeed;
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    usedSeed = baseSeed + attempt;
+    const random = rng(usedSeed);
+    const candidate = generators[generator](rows, cols, random);
+    const density = Number(controls.density.value);
+    for (let r = 1; r < rows - 1; r++) {
+      for (let c = 1; c < cols - 1; c++) {
+        if ((r === 1 && c === 1) || (r === rows - 2 && c === cols - 2)) continue;
+        if (candidate[r][c] === OPEN && random() < density * 0.03) candidate[r][c] = WALL;
+      }
+    }
+    candidate[1][1] = OPEN;
+    candidate[rows - 2][cols - 2] = OPEN;
+    if (pathExists(candidate)) {
+      maze = candidate;
+      break;
     }
   }
-  maze[1][1] = OPEN;
-  maze[rows - 2][cols - 2] = OPEN;
-  state = { ...state, maze, path: [], visited: new Set(), frontier: new Set(), events: [], step: 0 };
+  if (!maze) {
+    const random = rng(baseSeed);
+    maze = generators[generator](rows, cols, random);
+    usedSeed = baseSeed;
+  }
+  controls.seed.value = usedSeed;
+  state = { ...state, maze, path: [], visited: new Set(), frontier: new Set(), frontierPeak: 0, events: [], step: 0 };
   draw();
   updateMetrics();
 }
@@ -371,6 +496,24 @@ function reconstruct(parent, start, end) {
   return path.reverse();
 }
 
+function pathExists(maze) {
+  const start = [1, 1];
+  const end = [maze.length - 2, maze[0].length - 2];
+  const queue = [start];
+  const seen = new Set([key(start)]);
+  for (let index = 0; index < queue.length; index += 1) {
+    const current = queue[index];
+    if (key(current) === key(end)) return true;
+    for (const next of neighbors(current, maze)) {
+      const nextKey = key(next);
+      if (seen.has(nextKey)) continue;
+      seen.add(nextKey);
+      queue.push(next);
+    }
+  }
+  return false;
+}
+
 function solve(algorithm) {
   const maze = state.maze;
   const start = [1, 1];
@@ -386,10 +529,18 @@ function solve(algorithm) {
   const enqueue = (cell) => events.push(["enqueue", cell]);
   const visit = (cell) => events.push(["visit", cell]);
 
+  if (algorithm === "Lee") return solve("BFS");
+  if (algorithm === "Flood Fill") return solveFloodFill(maze, start, end);
+  if (algorithm === "SPFA") return solveSpfa(maze, start, end);
   if (algorithm === "Bidirectional BFS") return solveBidirectional(maze, start, end);
+  if (algorithm === "Left-Hand Rule") return solveWallFollower(maze, start, end, "left");
+  if (algorithm === "Right-Hand Rule") return solveWallFollower(maze, start, end, "right");
+  if (algorithm === "Tremaux") return solveTremaux(maze, start, end);
+  if (algorithm === "Pledge") return solvePledge(maze, start, end);
   if (algorithm === "IDDFS") return solveIddfs(maze, start, end);
   if (algorithm === "Bellman-Ford") return solveBellmanFord(maze, start, end);
   if (algorithm === "Dead-End Filling") return solveDeadEndFilling(maze, start, end);
+  if (algorithm === "Random Mouse") return solveRandomMouse(maze, start, end);
 
   while (queue.length || stack.length || frontier.length) {
     let current;
@@ -424,6 +575,60 @@ function solve(algorithm) {
   }
   const path = reconstruct(parent, start, end);
   for (const cell of path) events.push(["path", cell]);
+  return events;
+}
+
+function solveFloodFill(maze, start, end) {
+  const events = [];
+  const queue = [end];
+  const distance = new Map([[key(end), 0]]);
+  while (queue.length) {
+    const current = queue.shift();
+    events.push(["visit", current]);
+    for (const next of neighbors(current, maze)) {
+      const nextKey = key(next);
+      if (distance.has(nextKey)) continue;
+      distance.set(nextKey, distance.get(key(current)) + 1);
+      queue.push(next);
+      events.push(["enqueue", next]);
+    }
+  }
+  if (distance.has(key(start))) {
+    let current = start;
+    events.push(["path", current]);
+    while (key(current) !== key(end)) {
+      current = neighbors(current, maze)
+        .filter((next) => distance.has(key(next)))
+        .sort((a, b) => distance.get(key(a)) - distance.get(key(b)))[0];
+      events.push(["path", current]);
+    }
+  }
+  return events;
+}
+
+function solveSpfa(maze, start, end) {
+  const events = [];
+  const queue = [start];
+  const inQueue = new Set([key(start)]);
+  const distance = new Map([[key(start), 0]]);
+  const parent = new Map();
+  while (queue.length) {
+    const current = queue.shift();
+    inQueue.delete(key(current));
+    events.push(["visit", current]);
+    for (const next of neighbors(current, maze)) {
+      const candidate = distance.get(key(current)) + 1;
+      if (candidate >= (distance.get(key(next)) ?? Infinity)) continue;
+      distance.set(key(next), candidate);
+      parent.set(key(next), key(current));
+      if (!inQueue.has(key(next))) {
+        queue.push(next);
+        inQueue.add(key(next));
+        events.push(["enqueue", next]);
+      }
+    }
+  }
+  for (const cell of reconstruct(parent, start, end)) events.push(["path", cell]);
   return events;
 }
 
@@ -489,6 +694,110 @@ function solveIddfs(maze, start, end) {
       }
     }
   }
+  return events;
+}
+
+function solveWallFollower(maze, start, end, hand) {
+  const events = [];
+  const directions = [
+    [-1, 0],
+    [0, 1],
+    [1, 0],
+    [0, -1],
+  ];
+  let heading = 1;
+  let current = start;
+  const path = [start];
+  const maxSteps = Math.max(1, maze.flat().filter((value) => value === OPEN).length * 8);
+  for (let step = 0; step < maxSteps; step += 1) {
+    events.push(["visit", current]);
+    if (key(current) === key(end)) break;
+    const turns = hand === "left" ? [-1, 0, 1, 2] : [1, 0, -1, 2];
+    for (const turn of turns) {
+      const nextHeading = (heading + turn + 4) % 4;
+      const [dr, dc] = directions[nextHeading];
+      const next = [current[0] + dr, current[1] + dc];
+      if (maze[next[0]]?.[next[1]] !== OPEN) continue;
+      heading = nextHeading;
+      current = next;
+      path.push(current);
+      events.push(["enqueue", current]);
+      break;
+    }
+  }
+  if (key(path[path.length - 1]) === key(end)) for (const cell of path) events.push(["path", cell]);
+  return events;
+}
+
+function solveTremaux(maze, start, end) {
+  const events = [];
+  const edgeMarks = new Map();
+  const stack = [start];
+  const edgeKey = (a, b) => [key(a), key(b)].sort().join("|");
+  while (stack.length) {
+    const current = stack[stack.length - 1];
+    events.push(["visit", current]);
+    if (key(current) === key(end)) {
+      for (const cell of stack) events.push(["path", cell]);
+      return events;
+    }
+    const candidates = neighbors(current, maze)
+      .map((next) => [edgeMarks.get(edgeKey(current, next)) ?? 0, next])
+      .filter(([marks]) => marks < 2)
+      .sort((a, b) => a[0] - b[0] || Math.abs(a[1][0] - end[0]) + Math.abs(a[1][1] - end[1]) - (Math.abs(b[1][0] - end[0]) + Math.abs(b[1][1] - end[1])));
+    if (!candidates.length) {
+      stack.pop();
+      continue;
+    }
+    const next = candidates[0][1];
+    const id = edgeKey(current, next);
+    edgeMarks.set(id, (edgeMarks.get(id) ?? 0) + 1);
+    if (stack.length > 1 && key(next) === key(stack[stack.length - 2])) stack.pop();
+    else stack.push(next);
+    events.push(["enqueue", next]);
+  }
+  return events;
+}
+
+function solvePledge(maze, start, end) {
+  const events = [];
+  const directions = [
+    [-1, 0],
+    [0, 1],
+    [1, 0],
+    [0, -1],
+  ];
+  const preferred = Math.abs(end[1] - start[1]) >= Math.abs(end[0] - start[0]) ? 1 : 2;
+  let heading = preferred;
+  let turnSum = 0;
+  let current = start;
+  const path = [start];
+  const maxSteps = Math.max(1, maze.flat().filter((value) => value === OPEN).length * 12);
+  for (let step = 0; step < maxSteps; step += 1) {
+    events.push(["visit", current]);
+    if (key(current) === key(end)) break;
+    const forward = [current[0] + directions[preferred][0], current[1] + directions[preferred][1]];
+    if (turnSum === 0 && maze[forward[0]]?.[forward[1]] === OPEN) {
+      heading = preferred;
+      current = forward;
+      path.push(current);
+      events.push(["enqueue", current]);
+      continue;
+    }
+    for (const turn of [1, 0, -1, 2]) {
+      const nextHeading = (heading + turn + 4) % 4;
+      const [dr, dc] = directions[nextHeading];
+      const next = [current[0] + dr, current[1] + dc];
+      if (maze[next[0]]?.[next[1]] !== OPEN) continue;
+      heading = nextHeading;
+      turnSum += turn === 2 ? 2 : turn;
+      current = next;
+      path.push(current);
+      events.push(["enqueue", current]);
+      break;
+    }
+  }
+  if (key(path[path.length - 1]) === key(end)) for (const cell of path) events.push(["path", cell]);
   return events;
 }
 
@@ -558,26 +867,58 @@ function solveDeadEndFilling(maze, start, end) {
   return events;
 }
 
+function solveRandomMouse(maze, start, end) {
+  const events = [];
+  let seed = maze.length * 1000003 + maze[0].length;
+  for (let row = 0; row < maze.length; row += 1) {
+    for (let col = 0; col < maze[0].length; col += 1) seed = ((seed << 5) - seed + maze[row][col] + row + col) >>> 0;
+  }
+  const random = rng(seed);
+  let current = start;
+  const path = [start];
+  const maxSteps = Math.max(1, maze.flat().filter((value) => value === OPEN).length * 16);
+  for (let step = 0; step < maxSteps && key(current) !== key(end); step += 1) {
+    events.push(["visit", current]);
+    const options = neighbors(current, maze);
+    if (!options.length) break;
+    current = options[Math.floor(random() * options.length)];
+    path.push(current);
+    events.push(["enqueue", current]);
+  }
+  if (key(current) === key(end)) for (const cell of path) events.push(["path", cell]);
+  return events;
+}
+
 function run() {
   clearInterval(state.timer);
   state.events = solve(state.algorithm);
   state.path = [];
   state.visited = new Set();
   state.frontier = new Set();
+  state.frontierPeak = 0;
   state.step = 0;
   controls.status.textContent = "running";
-  const delay = Math.max(12, 260 - Number(controls.speed.value) * 4);
+  const speed = Number(controls.speed.value);
+  const delay = Math.max(4, 220 - speed * 4);
+  const stepsPerTick = Math.max(1, Math.floor(speed / 8));
   state.timer = setInterval(() => {
-    const event = state.events[state.step++];
-    if (!event) {
-      clearInterval(state.timer);
-      controls.status.textContent = "complete";
-      return;
+    for (let index = 0; index < stepsPerTick; index += 1) {
+      const event = state.events[state.step++];
+      if (!event) {
+        clearInterval(state.timer);
+        controls.status.textContent = "complete";
+        draw();
+        updateMetrics();
+        return;
+      }
+      const [type, cell] = event;
+      if (type === "visit") state.visited.add(key(cell));
+      if (type === "enqueue") {
+        state.frontier.add(key(cell));
+        state.frontierPeak = Math.max(state.frontierPeak, state.frontier.size);
+      }
+      if (type === "path") state.path.push(cell);
     }
-    const [type, cell] = event;
-    if (type === "visit") state.visited.add(key(cell));
-    if (type === "enqueue") state.frontier.add(key(cell));
-    if (type === "path") state.path.push(cell);
     draw();
     updateMetrics();
   }, delay);
@@ -607,17 +948,31 @@ function draw() {
 
 function updateMetrics() {
   const info = algorithms[state.algorithm];
+  const openCount = state.maze ? state.maze.flat().filter((value) => value === OPEN).length : 0;
+  const coverage = openCount ? Math.round((state.visited.size / openCount) * 100) : 0;
+  const workFactor = state.path.length ? (state.visited.size / state.path.length).toFixed(2) : "0.00";
   controls.algorithmName.textContent = info.name;
   controls.algorithmNotes.textContent = info.notes;
+  controls.timeComplexity.textContent = info.time;
+  controls.spaceComplexity.textContent = info.space;
+  controls.completeClaim.textContent = info.complete;
+  controls.optimalClaim.textContent = info.optimal;
   controls.pathLength.textContent = state.path.length;
   controls.visitedCount.textContent = state.visited.size;
-  controls.frontierPeak.textContent = state.frontier.size;
+  controls.frontierPeak.textContent = state.frontierPeak;
   controls.stepCount.textContent = state.step;
+  controls.coverageRatio.textContent = `${coverage}%`;
+  controls.workFactor.textContent = workFactor;
+  controls.eventCount.textContent = state.events.length;
+  controls.openCells.textContent = openCount;
 }
 
 function renderComparison() {
   controls.comparisonRows.innerHTML = Object.entries(algorithms)
-    .map(([key, info]) => `<tr><td>${key}</td><td>${info.family}</td><td>${info.optimal}</td><td>${info.time}</td></tr>`)
+    .map(
+      ([key, info]) =>
+        `<tr><td data-label="Algorithm">${key}</td><td data-label="Family">${info.family}</td><td data-label="Complete">${info.complete}</td><td data-label="Optimal">${info.optimal}</td><td data-label="Time">${info.time}</td><td data-label="Space">${info.space}</td></tr>`,
+    )
     .join("");
 }
 

@@ -12,10 +12,19 @@ from maze_solver.algorithms import (
     dead_end_filling_generator,
     dfs_generator,
     dijkstra_generator,
+    flood_fill_generator,
     greedy_best_first_generator,
     iddfs_generator,
+    lee_generator,
+    left_hand_rule_generator,
+    pledge_generator,
+    random_mouse_generator,
+    right_hand_rule_generator,
+    spfa_generator,
+    tremaux_generator,
     uniform_cost_generator,
 )
+from maze_solver.web_server import find_available_port
 
 
 def path_from(events):
@@ -33,19 +42,32 @@ def assert_valid_path(maze, path, start, end):
 def test_registry_includes_expected_algorithms():
     assert {
         "BFS",
+        "Lee",
         "DFS",
+        "Flood Fill",
         "A*",
         "Dijkstra",
         "UCS",
+        "SPFA",
         "Bidirectional BFS",
         "Greedy Best-First",
+        "Left-Hand Rule",
+        "Right-Hand Rule",
+        "Tremaux",
+        "Pledge",
         "IDDFS",
         "Bellman-Ford",
         "Dead-End Filling",
+        "Random Mouse",
     } <= set(ALGORITHM_REGISTRY)
     assert set(ALGORITHM_REGISTRY) == set(SOLVER_REGISTRY)
     assert ALGORITHM_REGISTRY["Dijkstra"].weighted is True
     assert ALGORITHM_REGISTRY["BFS"].time_complexity == "O(V + E)"
+
+
+def test_web_server_finds_available_port():
+    port = find_available_port("127.0.0.1", 49152, max_attempts=100)
+    assert 49152 <= port < 49252
 
 
 def test_bfs_finds_shortest_path_on_unweighted_grid():
@@ -93,6 +115,9 @@ def test_weighted_optimal_solvers_match_bfs_for_unit_weights():
     expected = bfs_path(maze, (1, 1), (4, 5))
     for solver in (
         uniform_cost_generator,
+        spfa_generator,
+        lee_generator,
+        flood_fill_generator,
         bidirectional_bfs_generator,
         iddfs_generator,
         bellman_ford_generator,
@@ -148,6 +173,15 @@ def test_non_optimal_solvers_return_valid_path_when_reachable():
             [1, 1, 1, 1, 1],
         ]
     )
-    for solver in (dfs_generator, greedy_best_first_generator, dead_end_filling_generator):
+    for solver in (
+        dfs_generator,
+        greedy_best_first_generator,
+        dead_end_filling_generator,
+        left_hand_rule_generator,
+        right_hand_rule_generator,
+        tremaux_generator,
+        pledge_generator,
+        random_mouse_generator,
+    ):
         path = path_from(list(solver(maze, (1, 1), (3, 1))))
         assert_valid_path(maze, path, (1, 1), (3, 1))
