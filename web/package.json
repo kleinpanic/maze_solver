@@ -1,0 +1,16 @@
+{
+  "name": "maze-solver-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && cp index.html dist/index.html && cp src/main.js dist/main.js",
+    "dev": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
+    "test": "node --check src/main.js"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "playwright": "^1.60.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

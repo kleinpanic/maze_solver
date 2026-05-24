@@ -37,6 +37,21 @@ python -m pip install -e ".[dev]"
 python3 main.py
 ```
 
+Run a terminal solve:
+
+```bash
+maze-solver-tui --rows 21 --cols 41 --seed 2026 --algorithm Dijkstra
+```
+
+Build the static WebUI:
+
+```bash
+cd web
+npm ci
+npm test
+npm run build
+```
+
 For a quick run on a machine that already has NumPy and Tkinter available:
 
 ```bash
@@ -125,6 +140,14 @@ Handles the Tkinter UI and the canvas drawing logic. It updates the maze visuali
 Key features:
 - **Maze Visualization**: Displays the maze and highlights the solving process.
 - **Controls**: Manages sliders, buttons, and input fields for configuring the maze generation and solving process.
+
+### `src/maze_solver/tui.py`
+
+Provides a terminal entry point for deterministic maze runs, solver selection, and compact ASCII summaries.
+
+### `web/`
+
+Contains the static browser implementation for GitHub Pages. It uses Tailwind CLI for CSS output and browser-side JavaScript for maze generation, solving, animation, and metrics.
 
 ## Algorithms Explained
 
