@@ -454,6 +454,36 @@ function twoStep(cell, rows, cols) {
   ].filter(([[r, c]]) => r > 0 && c > 0 && r < rows - 1 && c < cols - 1);
 }
 
+function gridCells(rows, cols) {
+  const cells = [];
+  for (let row = 1; row < rows - 1; row += 2) {
+    for (let col = 1; col < cols - 1; col += 2) cells.push([row, col]);
+  }
+  return cells;
+}
+
+function choice(values, random) {
+  return values[Math.floor(random() * values.length)];
+}
+
+function shuffle(values, random) {
+  for (let index = values.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(random() * (index + 1));
+    [values[index], values[swap]] = [values[swap], values[index]];
+  }
+  return values;
+}
+
+function carvePath(maze, path) {
+  for (let index = 0; index < path.length; index += 1) {
+    const cell = path[index];
+    maze[cell[0]][cell[1]] = OPEN;
+    if (index === 0) continue;
+    const previous = path[index - 1];
+    maze[(cell[0] + previous[0]) / 2][(cell[1] + previous[1]) / 2] = OPEN;
+  }
+}
+
 function blank(rows, cols) {
   return Array.from({ length: rows }, () => Array.from({ length: cols }, () => WALL));
 }
@@ -495,15 +525,11 @@ function generatePrim(rows, cols, random) {
 function generateKruskal(rows, cols, random) {
   const maze = blank(rows, cols);
   const parent = new Map();
-  const cells = [];
-  for (let row = 1; row < rows - 1; row += 2) {
-    for (let col = 1; col < cols - 1; col += 2) {
-      const cell = [row, col];
-      const id = key(cell);
-      cells.push(cell);
-      parent.set(id, id);
-      maze[row][col] = OPEN;
-    }
+  const cells = gridCells(rows, cols);
+  for (const cell of cells) {
+    const id = key(cell);
+    parent.set(id, id);
+    maze[cell[0]][cell[1]] = OPEN;
   }
   const find = (id) => {
     while (parent.get(id) !== id) {
@@ -518,13 +544,91 @@ function generateKruskal(rows, cols, random) {
       if (key(cell) < key(next)) walls.push([cell, next, wall]);
     }
   }
-  walls.sort(() => random() - 0.5);
+  shuffle(walls, random);
   for (const [a, b, wall] of walls) {
     const rootA = find(key(a));
     const rootB = find(key(b));
     if (rootA !== rootB) {
       parent.set(rootB, rootA);
       maze[wall[0]][wall[1]] = OPEN;
+    }
+  }
+  return maze;
+}
+
+function generateWilson(rows, cols, random) {
+  const maze = blank(rows, cols);
+  const cells = gridCells(rows, cols);
+  const inTree = new Set([key(choice(cells, random))]);
+  const [rootRow, rootCol] = [...inTree][0].split(",").map(Number);
+  maze[rootRow][rootCol] = OPEN;
+
+  while (inTree.size < cells.length) {
+    let current = choice(cells.filter((cell) => !inTree.has(key(cell))), random);
+    let path = [current];
+    let positions = new Map([[key(current), 0]]);
+    while (!inTree.has(key(current))) {
+      current = choice(twoStep(current, rows, cols).map(([cell]) => cell), random);
+      const currentKey = key(current);
+      if (positions.has(currentKey)) {
+        path = path.slice(0, positions.get(currentKey) + 1);
+        positions = new Map(path.map((cell, index) => [key(cell), index]));
+      } else {
+        path.push(current);
+        positions.set(currentKey, path.length - 1);
+      }
+    }
+    carvePath(maze, path);
+    path.forEach((cell) => inTree.add(key(cell)));
+  }
+  return maze;
+}
+
+function generateAldousBroder(rows, cols, random) {
+  const maze = blank(rows, cols);
+  const cells = gridCells(rows, cols);
+  let current = choice(cells, random);
+  const visited = new Set([key(current)]);
+  maze[current[0]][current[1]] = OPEN;
+
+  while (visited.size < cells.length) {
+    const [next, wall] = choice(twoStep(current, rows, cols), random);
+    if (!visited.has(key(next))) {
+      maze[wall[0]][wall[1]] = OPEN;
+      maze[next[0]][next[1]] = OPEN;
+      visited.add(key(next));
+    }
+    current = next;
+  }
+  return maze;
+}
+
+function generateHuntAndKill(rows, cols, random) {
+  const maze = blank(rows, cols);
+  let current = [1, 1];
+  maze[1][1] = OPEN;
+
+  while (current) {
+    const unvisited = twoStep(current, rows, cols).filter(([[r, c]]) => maze[r][c] === WALL);
+    if (unvisited.length) {
+      const [next, wall] = choice(unvisited, random);
+      maze[wall[0]][wall[1]] = OPEN;
+      maze[next[0]][next[1]] = OPEN;
+      current = next;
+      continue;
+    }
+
+    current = null;
+    for (const cell of gridCells(rows, cols)) {
+      if (maze[cell[0]][cell[1]] === OPEN) continue;
+      const visitedNeighbors = twoStep(cell, rows, cols).filter(([[r, c]]) => maze[r][c] === OPEN);
+      if (visitedNeighbors.length) {
+        const [_neighbor, wall] = choice(visitedNeighbors, random);
+        maze[cell[0]][cell[1]] = OPEN;
+        maze[wall[0]][wall[1]] = OPEN;
+        current = cell;
+        break;
+      }
     }
   }
   return maze;
@@ -588,6 +692,51 @@ function generateSidewinder(rows, cols, random) {
   return maze;
 }
 
+function generateEller(rows, cols, random) {
+  const maze = blank(rows, cols);
+  const cellCols = [];
+  for (let col = 1; col < cols - 1; col += 2) cellCols.push(col);
+  let sets = new Map();
+  let nextSet = 1;
+
+  for (let row = 1; row < rows - 1; row += 2) {
+    const lastRow = row >= rows - 2;
+    for (const col of cellCols) {
+      maze[row][col] = OPEN;
+      if (!sets.has(col)) {
+        sets.set(col, nextSet);
+        nextSet += 1;
+      }
+    }
+
+    for (let index = 0; index < cellCols.length - 1; index += 1) {
+      const left = cellCols[index];
+      const right = cellCols[index + 1];
+      if ((lastRow || random() < 0.5) && sets.get(left) !== sets.get(right)) {
+        maze[row][left + 1] = OPEN;
+        const oldSet = sets.get(right);
+        const newSet = sets.get(left);
+        sets = new Map([...sets].map(([col, setId]) => [col, setId === oldSet ? newSet : setId]));
+      }
+    }
+
+    if (lastRow) continue;
+
+    const nextSets = new Map();
+    for (const setId of new Set(sets.values())) {
+      const members = shuffle([...sets].filter(([_col, memberSet]) => memberSet === setId).map(([col]) => col), random);
+      const verticalCount = 1 + Math.floor(random() * members.length);
+      for (const col of members.slice(0, verticalCount)) {
+        maze[row + 1][col] = OPEN;
+        maze[row + 2][col] = OPEN;
+        nextSets.set(col, setId);
+      }
+    }
+    sets = nextSets;
+  }
+  return maze;
+}
+
 function generateRecursiveDivision(rows, cols, random) {
   const maze = Array.from({ length: rows }, (_, row) =>
     Array.from({ length: cols }, (_, col) => (row === 0 || col === 0 || row === rows - 1 || col === cols - 1 ? WALL : OPEN)),
@@ -637,9 +786,13 @@ function generateMaze() {
     "Recursive Backtracker": generateRecursive,
     "Prim's": generatePrim,
     Kruskal: generateKruskal,
+    Wilson: generateWilson,
+    "Aldous-Broder": generateAldousBroder,
+    "Hunt and Kill": generateHuntAndKill,
     "Growing Tree": generateGrowingTree,
     "Binary Tree": generateBinaryTree,
     Sidewinder: generateSidewinder,
+    Eller: generateEller,
     "Recursive Division": generateRecursiveDivision,
   };
   let maze = null;

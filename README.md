@@ -53,7 +53,7 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 
 ## Generator Catalog
 
-Recursive Backtracker, Randomized Prim, Randomized Kruskal, Wilson, Aldous-Broder, Hunt and Kill, Binary Tree, Sidewinder, Growing Tree, Eller, and Recursive Division are available in the Python core. The WebUI includes the fast interactive subset: Recursive Backtracker, Prim, Kruskal, Growing Tree, Binary Tree, Sidewinder, and Recursive Division.
+Recursive Backtracker, Randomized Prim, Randomized Kruskal, Wilson, Aldous-Broder, Hunt and Kill, Binary Tree, Sidewinder, Growing Tree, Eller, and Recursive Division are available in the Python core and the WebUI.
 
 See [docs/ALGORITHMS.md](docs/ALGORITHMS.md) for the full catalog, complexity notes, and references.
 

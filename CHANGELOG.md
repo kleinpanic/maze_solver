@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2
+
+- Expanded the WebUI generator catalog with Wilson, Aldous-Broder, Hunt and Kill, and Eller's algorithm so the browser museum matches the Python generator core.
+- Kept generated WebUI mazes solvable by running the existing deterministic seed retry path across the full generator set.
+
 ## 0.2.1
 
 - Added Iterative Deepening A* across the Python core, terminal UI, desktop GUI selector, WebUI solver museum, tests, and documentation.

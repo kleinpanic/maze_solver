@@ -2,6 +2,8 @@
 
 Maze Solver models a maze as a rectangular grid graph. Open cells are vertices, passable north/south/east/west moves are edges, and the default edge cost is one. That keeps the visualizer approachable while still exposing standard graph-search and maze-generation ideas.
 
+The Python core and WebUI share the same named solver and generator catalog so browser demonstrations, terminal runs, and desktop GUI experiments describe the same algorithms.
+
 ## Solvers
 
 | Algorithm | Family | Complete | Optimal | Weighted | Time | Space | Notes |
