@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.18
+
+- Matched the right inspector rail height to the left controls and center stage
+  on desktop so the three primary WebUI columns land on the same baseline.
+
 ## 0.2.17
 
 - Moved solver comparison into a dedicated `comparison.html` WebUI page with
