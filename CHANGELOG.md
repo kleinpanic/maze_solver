@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.11
+
+- Added searchable and family-filtered WebUI solver browsing so the full
+  algorithm museum is easier to inspect and compare.
+- Added TUI catalog search/filter flags for terminal-side algorithm discovery.
+- Changed GUI algorithm selection to rerun on the current maze instead of
+  silently generating a different maze.
+
 ## 0.2.10
 
 - Updated the GitHub Pages browser title and top navigation branding to match

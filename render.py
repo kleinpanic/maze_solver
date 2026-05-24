@@ -162,7 +162,7 @@ class Render:
         self.algorithm_combobox["values"] = tuple(ALGORITHM_REGISTRY)
         self.algorithm_combobox.current(0)
         self.algorithm_combobox.pack(fill="x", pady=5)
-        self.algorithm_combobox.bind("<<ComboboxSelected>>", lambda _event: self.app.select_algorithm_and_restart())
+        self.algorithm_combobox.bind("<<ComboboxSelected>>", lambda _event: self.app.select_algorithm_and_rerun())
 
         self.algorithm_info_var = tk.StringVar()
         self.algorithm_info = ttk.Label(

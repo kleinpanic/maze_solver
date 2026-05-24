@@ -55,13 +55,22 @@ try {
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle" });
   await page.waitForFunction(() => document.querySelector("#roadmapSummary")?.textContent.includes("implemented/tracked"));
   const roadmapRows = await page.locator(".roadmap-row").count();
-  assert.ok(roadmapRows >= 80, "algorithm roadmap should track a broad 2D solver catalog");
+  assert.ok(roadmapRows >= 80);
   const solverButtons = await page.locator("[data-algorithm]").count();
-  assert.ok(solverButtons >= 80, "roadmap algorithms should be exposed as runnable solver buttons");
-  assert.equal(await page.locator("#density").count(), 0, "wall density should not be exposed as a misleading control");
-  assert.equal(await page.locator("#rows").inputValue(), "41", "default rows should show a richer first maze");
-  assert.equal(await page.locator("#cols").inputValue(), "61", "default columns should show a richer first maze");
-  assert.equal(await page.locator("#speed").inputValue(), "44", "default speed should be brisk enough for larger mazes");
+  assert.ok(solverButtons >= 80);
+  assert.match(await page.locator("#algorithmCount").innerText(), new RegExp(`^${solverButtons}/${solverButtons}\\b`));
+  await page.fill("#algorithmSearch", "dijkstra");
+  assert.equal(await page.locator('[data-algorithm="Dijkstra"]').count(), 1);
+  assert.ok(Number((await page.locator("#algorithmCount").innerText()).split("/")[0]) < solverButtons);
+  await page.click("#clearAlgorithmFilters");
+  await page.selectOption("#familyFilter", { label: "Weighted shortest path" });
+  assert.equal(await page.locator('[data-algorithm="Dijkstra"]').count(), 1);
+  await page.click("#clearAlgorithmFilters");
+  assert.equal(await page.locator("[data-algorithm]").count(), solverButtons);
+  assert.equal(await page.locator("#density").count(), 0);
+  assert.equal(await page.locator("#rows").inputValue(), "41");
+  assert.equal(await page.locator("#cols").inputValue(), "61");
+  assert.equal(await page.locator("#speed").inputValue(), "44");
   await page.fill("#rows", "21");
   await page.fill("#cols", "25");
   await page.evaluate(() => {
@@ -85,15 +94,15 @@ try {
       timeout: 15_000,
     });
     const secondSeed = await page.locator("#seed").inputValue();
-    assert.notEqual(firstSeed, secondSeed, `${generator} solver buttons should restart with a fresh maze`);
+    assert.notEqual(firstSeed, secondSeed);
     await page.click("#run");
     await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
       timeout: 15_000,
     });
     const pathLength = Number(await page.locator("#pathLength").innerText());
     const openCells = Number(await page.locator("#openCells").innerText());
-    assert.ok(pathLength > 0, `${generator} should produce a BFS path`);
-    assert.ok(openCells >= pathLength, `${generator} open cells should cover its path`);
+    assert.ok(pathLength > 0);
+    assert.ok(openCells >= pathLength);
   }
 
   for (const algorithm of ["Theta*", "Jump Point Search", "D* Lite", "RRT*", "Ant Colony Optimization", "SAT Path Encoding"]) {
@@ -102,16 +111,13 @@ try {
       timeout: 15_000,
     });
     const pathLength = Number(await page.locator("#pathLength").innerText());
-    assert.ok(pathLength > 0, `${algorithm} should render a real path`);
+    assert.ok(pathLength > 0);
   }
   await page.click('[data-algorithm="SAT Path Encoding"]');
   await page.waitForFunction(() => document.querySelector("#status")?.textContent === "complete", null, {
     timeout: 15_000,
   });
-  assert.ok(
-    !(await page.locator("#mathSummary").innerText()).includes("No mathematical breakdown"),
-    "catalog algorithms should render an educational math breakdown",
-  );
+  assert.ok(!(await page.locator("#mathSummary").innerText()).includes("No mathematical breakdown"));
 
   await screenshot(page, "webui-smoke-desktop.png");
   await page.setViewportSize({ width: 390, height: 900 });

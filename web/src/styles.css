@@ -134,18 +134,52 @@ button:focus-visible {
 
 .segments {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
   max-height: 360px;
   overflow: auto;
   padding-right: 2px;
 }
 
+.solver-browser {
+  display: grid;
+  gap: 8px;
+}
+
+.solver-browser-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #9fb0c3;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: none;
+}
+
+.solver-browser-meta button {
+  min-height: 28px;
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
 .segments button {
-  min-height: 34px;
-  padding: 7px 6px;
+  min-height: 48px;
+  padding: 8px 7px;
   font-size: 12px;
   white-space: normal;
+}
+
+.segments button small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(216, 227, 239, 0.64);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.segments button.active small {
+  color: rgba(7, 16, 20, 0.72);
 }
 
 button {

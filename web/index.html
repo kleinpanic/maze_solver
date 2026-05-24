@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver Museum</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.10" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.11" />
   </head>
   <body>
     <div class="app-shell">
@@ -41,6 +41,16 @@
 
           <div class="control-group">
             <span>Solver</span>
+            <div class="solver-browser">
+              <input id="algorithmSearch" type="search" placeholder="Search algorithms" aria-label="Search algorithms" />
+              <select id="familyFilter" aria-label="Filter algorithms by family">
+                <option value="all">All families</option>
+              </select>
+              <div class="solver-browser-meta">
+                <span id="algorithmCount">Loading algorithms</span>
+                <button id="clearAlgorithmFilters" type="button">Clear</button>
+              </div>
+            </div>
             <div class="segments" id="algorithmGroup">
               <button data-algorithm="BFS" class="active">BFS</button>
               <button data-algorithm="Lee">Lee</button>
@@ -204,6 +214,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.10"></script>
+    <script type="module" src="./main.js?v=0.2.11"></script>
   </body>
 </html>

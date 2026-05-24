@@ -27,7 +27,7 @@ ANSI = {
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     if args.catalog:
-        print_catalog()
+        print_catalog(args)
         return
 
     maze, seed = generate_maze(
@@ -89,16 +89,85 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--color", choices=("auto", "always", "never"), default="auto")
     parser.add_argument("--legend", action="store_true")
     parser.add_argument("--catalog", action="store_true", help="Print the tracked maze-solving algorithm catalog.")
+    parser.add_argument("--catalog-search", default="", help="Filter catalog rows by name, family, or notes.")
+    parser.add_argument("--catalog-family", default="", help="Filter catalog rows by exact family.")
+    parser.add_argument("--catalog-optimal", choices=("yes", "no"), default=None)
+    parser.add_argument("--catalog-complete", choices=("yes", "no"), default=None)
+    parser.add_argument("--catalog-weighted", choices=("yes", "no"), default=None)
+    parser.add_argument("--catalog-sort", choices=("name", "family", "time", "space"), default="family")
     return parser.parse_args(argv)
 
 
-def print_catalog() -> None:
+def print_catalog(args: argparse.Namespace) -> None:
     implemented, tracked = catalog_summary()
     print(f"Maze Solver Algorithm Catalog | {implemented}/{tracked} implemented/tracked")
-    for entry in algorithm_catalog():
+
+    rows = list(algorithm_catalog())
+    query = args.catalog_search.casefold()
+    if query:
+        rows = [
+            entry
+            for entry in rows
+            if query
+            in f"{entry['name']} {entry['family']} {entry['notes']} {entry['time']} {entry['space']}".casefold()
+        ]
+    if args.catalog_family:
+        rows = [entry for entry in rows if entry["family"] == args.catalog_family]
+    for attr, expected in (
+        ("optimal", args.catalog_optimal),
+        ("complete", args.catalog_complete),
+        ("weighted", args.catalog_weighted),
+    ):
+        if expected is None:
+            continue
+        wanted = expected == "yes"
+        rows = [entry for entry in rows if _catalog_info(entry).format(attr) == str(wanted)]
+    rows.sort(key=lambda entry: (entry[args.catalog_sort], entry["name"]))
+
+    for entry in rows:
+        info = _catalog_info(entry)
         print(
-            f"{entry['status']:11} | {entry['name']} | {entry['family']} | time={entry['time']} | space={entry['space']}"
+            f"{entry['status']:11} | {entry['name']} | {entry['family']} | "
+            f"optimal={info.format('optimal')} | complete={info.format('complete')} | weighted={info.format('weighted')} | "
+            f"time={entry['time']} | space={entry['space']}"
         )
+
+
+class _CatalogInfo:
+    def __init__(self, entry: dict[str, str]):
+        self.entry = entry
+        self.info = ALGORITHM_REGISTRY.get(entry["name"])
+        if entry["name"] == "Uniform-Cost Search":
+            self.info = ALGORITHM_REGISTRY.get("UCS")
+
+    def format(self, attr: str) -> str:
+        if self.info is not None:
+            return str(getattr(self.info, attr))
+        if attr == "weighted":
+            return str(
+                any(
+                    token in self.entry["name"] or token in self.entry["family"]
+                    for token in ("Dijkstra", "Weighted", "Cost", "A*")
+                )
+            )
+        if attr == "optimal":
+            return str(
+                any(
+                    token in self.entry["name"]
+                    for token in ("A*", "Dijkstra", "BFS", "D*", "Floyd", "Johnson", "Theta", "JPS", "Integer")
+                )
+            )
+        if attr == "complete":
+            return str(
+                not any(
+                    token in self.entry["name"] for token in ("Hill", "Bug", "Random", "Genetic", "Annealing", "Tabu")
+                )
+            )
+        raise ValueError(attr)
+
+
+def _catalog_info(entry: dict[str, str]) -> _CatalogInfo:
+    return _CatalogInfo(entry)
 
 
 def paint(symbol: str, role: str, color: bool) -> str:

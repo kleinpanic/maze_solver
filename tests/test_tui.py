@@ -52,3 +52,12 @@ def test_tui_main_prints_metadata_legend_and_stats(capsys):
     assert "path=27 visited=34 frontier=40 steps=34" in output
     assert "wall_ratio=56.3%" in output
     assert "\033[" not in output
+
+
+def test_tui_catalog_filters_and_flags(capsys):
+    tui.main(["--catalog", "--catalog-search", "dijkstra", "--catalog-weighted", "yes", "--catalog-sort", "name"])
+
+    output = capsys.readouterr().out
+    assert "Dijkstra" in output
+    assert "weighted=True" in output
+    assert "Breadth-First Search" not in output

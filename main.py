@@ -236,12 +236,16 @@ class MazeSolverApp:
         score = format_complexity_score(complexity_score(algorithm_info, stats, max(1, self.steps or 1)))
         self.render.update_maze_stats(stats, score)
 
-    def select_algorithm_and_restart(self):
+    def select_algorithm_and_rerun(self):
         self.render.update_algorithm_panel()
         if self.maze is None:
             self.render.set_status("Select a generator, then generate a maze.")
             return
-        self.generate_maze(auto_solve=True)
+        if self.solving:
+            self.request_stop_solver(show_message=False)
+            self.root.after(25, lambda: self.solve_maze(show_dialog=False))
+            return
+        self.solve_maze(show_dialog=False)
 
     def request_stop_solver(self, show_message=True):
         if not self.solving:

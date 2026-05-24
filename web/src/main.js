@@ -607,6 +607,10 @@ const controls = {
   cols: document.querySelector("#cols"),
   seed: document.querySelector("#seed"),
   speed: document.querySelector("#speed"),
+  algorithmSearch: document.querySelector("#algorithmSearch"),
+  familyFilter: document.querySelector("#familyFilter"),
+  algorithmCount: document.querySelector("#algorithmCount"),
+  clearAlgorithmFilters: document.querySelector("#clearAlgorithmFilters"),
   generate: document.querySelector("#generate"),
   run: document.querySelector("#run"),
   status: document.querySelector("#status"),
@@ -654,6 +658,14 @@ const controls = {
 
 function key(cell) {
   return `${cell[0]},${cell[1]}`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function rng(seed) {
@@ -1884,10 +1896,43 @@ function shortAlgorithmLabel(name) {
     .slice(0, 14);
 }
 
+function algorithmEntries() {
+  const pinned = new Map(["BFS", "Dijkstra", "A*", "DFS", "Bidirectional BFS", "Lee"].map((name, index) => [name, index]));
+  return Object.entries(algorithms).sort(([leftKey, left], [rightKey, right]) => {
+    const leftPinned = pinned.has(leftKey);
+    const rightPinned = pinned.has(rightKey);
+    if (leftPinned || rightPinned) return (pinned.get(leftKey) ?? 99) - (pinned.get(rightKey) ?? 99);
+    return left.name.localeCompare(right.name);
+  });
+}
+
+function renderFamilyFilter() {
+  const current = controls.familyFilter.value || "all";
+  const families = [...new Set(algorithmEntries().map(([, info]) => info.family))];
+  controls.familyFilter.innerHTML = [
+    '<option value="all">All families</option>',
+    ...families.map((family) => `<option value="${escapeHtml(family)}">${escapeHtml(family)}</option>`),
+  ].join("");
+  controls.familyFilter.value = families.includes(current) ? current : "all";
+}
+
 function renderAlgorithmButtons() {
-  controls.algorithmGroup.innerHTML = Object.keys(algorithms)
-    .map((name) => `<button data-algorithm="${name}" class="${name === state.algorithm ? "active" : ""}">${shortAlgorithmLabel(name)}</button>`)
+  const query = controls.algorithmSearch.value.trim().toLowerCase();
+  const family = controls.familyFilter.value;
+  const entries = algorithmEntries();
+  const filtered = entries.filter(([name, info]) => {
+    const searchable = `${name} ${info.name} ${info.family} ${info.notes} ${info.time} ${info.space}`.toLowerCase();
+    return (family === "all" || info.family === family) && (!query || searchable.includes(query));
+  });
+
+  controls.algorithmGroup.innerHTML = filtered
+    .map(
+      ([name, info]) =>
+        `<button data-algorithm="${escapeHtml(name)}" class="${name === state.algorithm ? "active" : ""}">` +
+        `${escapeHtml(shortAlgorithmLabel(name))}<small>${escapeHtml(info.family)}</small></button>`,
+    )
     .join("");
+  controls.algorithmCount.textContent = `${filtered.length}/${entries.length} shown`;
 }
 
 async function renderRoadmap() {
@@ -1899,7 +1944,7 @@ async function renderRoadmap() {
   }
   for (const entry of state.catalog) {
     const key = entry.name;
-    if (algorithms[key]) continue;
+    if (algorithms[key] || key === "Uniform-Cost Search") continue;
     algorithms[key] = {
       name: key,
       family: entry.family,
@@ -1926,6 +1971,7 @@ async function renderRoadmap() {
       watch: `Compare visited cells, frontier pressure, path length, and calculated bound against direct grid-search baselines.`,
     };
   }
+  renderFamilyFilter();
   renderAlgorithmButtons();
   renderComparison();
   const implemented = state.catalog.filter((entry) => entry.status === "implemented").length;
@@ -1939,11 +1985,19 @@ async function renderRoadmap() {
 }
 
 controls.algorithmGroup.addEventListener("click", (event) => {
-  if (!(event.target instanceof HTMLButtonElement)) return;
-  state.algorithm = event.target.dataset.algorithm;
-  document.querySelectorAll("[data-algorithm]").forEach((button) => button.classList.toggle("active", button === event.target));
+  const button = event.target.closest("button[data-algorithm]");
+  if (!(button instanceof HTMLButtonElement)) return;
+  state.algorithm = button.dataset.algorithm;
+  document.querySelectorAll("[data-algorithm]").forEach((element) => element.classList.toggle("active", element === button));
   generateMaze({ randomizeSeed: true });
   run();
+});
+controls.algorithmSearch.addEventListener("input", renderAlgorithmButtons);
+controls.familyFilter.addEventListener("change", renderAlgorithmButtons);
+controls.clearAlgorithmFilters.addEventListener("click", () => {
+  controls.algorithmSearch.value = "";
+  controls.familyFilter.value = "all";
+  renderAlgorithmButtons();
 });
 controls.generate.addEventListener("click", () => generateMaze({ randomizeSeed: true }));
 controls.generator.addEventListener("change", () => {
