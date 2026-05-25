@@ -31,10 +31,11 @@ def find_available_port(host: str, preferred_port: int, max_attempts: int = 100)
 
 
 def default_dist_dir() -> Path:
-    repo_candidate = Path(__file__).resolve().parents[2] / "web" / "dist"
-    cwd_candidate = Path.cwd() / "web" / "dist"
+    package_candidate = Path(__file__).resolve().parent / "web" / "dist"
+    repo_candidate = Path(__file__).resolve().parents[2] / "src" / "maze_solver" / "web" / "dist"
+    cwd_candidate = Path.cwd() / "src" / "maze_solver" / "web" / "dist"
     direct_candidate = Path.cwd() / "dist"
-    for candidate in (cwd_candidate, direct_candidate, repo_candidate):
+    for candidate in (cwd_candidate, direct_candidate, repo_candidate, package_candidate):
         if (candidate / "index.html").exists():
             return candidate
     return cwd_candidate
@@ -55,7 +56,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     dist = args.dist.resolve()
     if not (dist / "index.html").exists():
-        raise SystemExit(f"WebUI build not found at {dist}. Run `cd web && npm run build` first.")
+        raise SystemExit(f"WebUI build not found at {dist}. Run `make web-build` first.")
 
     port = find_available_port(args.host, args.port)
     handler = functools.partial(QuietHandler, directory=str(dist))

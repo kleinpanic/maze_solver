@@ -17,13 +17,13 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 ## Features
 
 - Real-time visualization of visited cells, frontier cells, and final paths.
-- Deterministic maze generation with seeds and a connected-open-component guarantee after noise/loop shaping.
+- Deterministic maze generation with seeds, perfect-maze topology by default, optional braided loops, and connected-open-component validation.
 - Shared Python package under `src/maze_solver`.
 - Browser-side educational WebUI with Canvas animation, researched complexity notes, calculated per-maze graph bounds, runtime metrics, per-solver math breakdowns, generator theory, maze-structure statistics, and 85 runnable renditions against a 128-algorithm known-applicable 2D coverage counter.
 - Desktop GUI with algorithm metadata, restart-on-selection solving, runtime controls, graph telemetry, calculated bound estimates, and high-contrast visualization states.
 - Terminal UI with reproducible runs, optional ANSI color, calculated graph/work statistics, and a `--catalog` view for the full roadmap.
 - CI for Python 3.11, 3.12, and 3.13.
-- GitHub Pages deployment from `web/dist`.
+- GitHub Pages deployment from `src/maze_solver/web/dist`.
 - Automated tagged releases for `v*` tags, including Python distributions and a zipped WebUI build.
 - CodeQL, dependency review, and Dependabot configuration.
 
@@ -56,7 +56,7 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 
 Recursive Backtracker, Randomized Prim, Randomized Kruskal, Wilson, Aldous-Broder, Hunt and Kill, Binary Tree, Sidewinder, Growing Tree, Eller, and Recursive Division are available in the Python core and the WebUI. The browser view explains each generator's graph model, perfect-maze claim, asymptotic cost, texture bias, invariant, and carving procedure while reporting wall ratio, dead ends, junctions, and corridor bias for the current maze.
 
-Every generated maze keeps all open cells reachable from the start after the optional loop/noise pass. That means a seed can produce braided routes and extra rooms, but it should not leave disconnected islands that look playable while being unreachable.
+Every generated maze keeps all open cells reachable from the start. In perfect topology mode, spanning-tree generators produce a connected acyclic passage graph with exactly one route between any two open cells. Braided topology adds connector loops without randomly closing passages or creating accidental 2x2 open blocks.
 
 See [docs/ALGORITHMS.md](docs/ALGORITHMS.md) for the full catalog, complexity notes, and references.
 The machine-readable implementation catalog is tracked in [src/maze_solver/algorithm_catalog.json](src/maze_solver/algorithm_catalog.json). The coverage counter combines those 85 implemented maze, grid, routing, robotics, sampling, optimization, and constraint-solving renditions with the researched backlog in [src/maze_solver/known_2d_backlog.json](src/maze_solver/known_2d_backlog.json), currently 85 of 128 known-applicable 2D algorithms covered.
@@ -66,14 +66,14 @@ The machine-readable implementation catalog is tracked in [src/maze_solver/algor
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -e ".[dev]"
-python3 main.py
+make dev
+maze_solver gui
 ```
 
 Run a terminal solve:
 
 ```bash
-maze-solver-tui --rows 21 --cols 41 --seed 2026 --algorithm Dijkstra
+maze_solver tui --rows 21 --cols 41 --seed 2026 --algorithm Dijkstra
 ```
 
 Add `--color always --legend` for a colorized terminal render with the state legend.
@@ -81,11 +81,8 @@ Add `--color always --legend` for a colorized terminal render with the state leg
 Run the WebUI locally:
 
 ```bash
-cd web
-npm ci
-npm run build
-cd ..
-maze-solver-web
+make web-build
+maze_solver web
 ```
 
 Then open the URL printed by the command. It starts at port `4173`, falls forward when the port is busy, and stops cleanly on Ctrl-C.
@@ -96,17 +93,15 @@ Run Python checks:
 
 ```bash
 source .venv/bin/activate
-pytest
-ruff check .
-ruff format --check .
+make test-python
+make lint
 ```
 
 Run WebUI checks:
 
 ```bash
-cd web
-npm test
-npm run build
+make test-web
+make web-build
 ```
 
 Create a release:
@@ -121,11 +116,11 @@ The `Release` workflow verifies Python and WebUI checks before publishing the Gi
 ## Repository Layout
 
 ```text
-src/maze_solver/        Python package and algorithm core
-tests/                  Python tests for solvers and generators
-web/                    Static Canvas WebUI
-docs/ALGORITHMS.md      Algorithm catalog and references
-.github/workflows/      CI, Pages, and security workflows
+src/maze_solver/          Python package, GUI, TUI, server, and algorithm core
+src/maze_solver/web/      Static Canvas WebUI
+src/tests/                Python tests for solvers and generators
+docs/ALGORITHMS.md        Algorithm catalog and references
+.github/workflows/        CI, Pages, release, and security workflows
 ```
 
 ## License

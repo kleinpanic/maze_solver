@@ -23,6 +23,27 @@ def reachable_cells(maze):
     return seen
 
 
+def graph_edges(maze):
+    edges = 0
+    for row in range(maze.shape[0]):
+        for col in range(maze.shape[1]):
+            if maze[row, col] != 0:
+                continue
+            if row + 1 < maze.shape[0] and maze[row + 1, col] == 0:
+                edges += 1
+            if col + 1 < maze.shape[1] and maze[row, col + 1] == 0:
+                edges += 1
+    return edges
+
+
+def has_open_2x2(maze):
+    for row in range(maze.shape[0] - 1):
+        for col in range(maze.shape[1] - 1):
+            if np.all(maze[row : row + 2, col : col + 2] == 0):
+                return True
+    return False
+
+
 def test_generation_registry_exposes_researched_algorithms():
     assert {
         "Recursive Backtracker",
@@ -48,6 +69,26 @@ def test_generators_are_solvable_and_open_endpoints():
         assert maze[default_start()] == 0
         assert maze[default_goal(maze)] == 0
         assert is_solvable(maze, default_start(), default_goal(maze)), algorithm
+
+
+def test_perfect_topology_is_a_connected_tree_without_open_2x2_blocks():
+    for algorithm, info in GENERATION_REGISTRY.items():
+        if not info.produces_perfect_maze:
+            continue
+        maze, _ = generate_maze(25, 31, generation_algorithm=algorithm, seed=431, topology="perfect")
+        open_count = int(np.count_nonzero(maze == 0))
+        assert graph_edges(maze) == open_count - 1, algorithm
+        assert not has_open_2x2(maze), algorithm
+
+
+def test_braided_topology_keeps_reachability_without_random_closures_or_open_2x2_blocks():
+    for algorithm, info in GENERATION_REGISTRY.items():
+        if not info.produces_perfect_maze:
+            continue
+        maze, _ = generate_maze(25, 31, generation_algorithm=algorithm, seed=914, topology="braided")
+        open_cells = set(zip(*np.where(maze == 0), strict=False))
+        assert open_cells <= reachable_cells(maze), algorithm
+        assert not has_open_2x2(maze), algorithm
 
 
 def test_generation_is_reproducible_with_seed():

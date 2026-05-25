@@ -5,14 +5,7 @@
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -e ".[dev]"
-```
-
-For the WebUI:
-
-```bash
-cd web
-npm ci
+make dev
 ```
 
 ## Checks
@@ -20,17 +13,15 @@ npm ci
 Run the Python suite:
 
 ```bash
-pytest
-ruff check .
-ruff format --check .
+make lint
+make test-python
 ```
 
 Run the WebUI checks:
 
 ```bash
-cd web
-npm test
-npm run build
+make test-web
+make web-build
 ```
 
 ## Algorithm Changes

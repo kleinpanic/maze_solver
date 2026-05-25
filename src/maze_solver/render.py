@@ -5,7 +5,7 @@ from tkinter import messagebox, ttk
 
 from maze_solver.algorithms import ALGORITHM_REGISTRY
 from maze_solver.catalog import known_2d_coverage_summary
-from maze_solver.generation import GENERATION_REGISTRY
+from maze_solver.generation import GENERATION_REGISTRY, GENERATION_TOPOLOGIES
 
 PINNED_ALGORITHMS = ("BFS", "Dijkstra", "A*", "DFS", "Bidirectional BFS", "Lee")
 
@@ -167,6 +167,13 @@ class Render:
         self.gen_algorithm_combobox["values"] = tuple(GENERATION_REGISTRY)
         self.gen_algorithm_combobox.current(0)
         self.gen_algorithm_combobox.pack(fill="x", pady=5)
+
+        ttk.Label(self.sidebar, text="Topology:").pack(anchor="w", pady=(10, 0))
+        self.topology_var = tk.StringVar()
+        self.topology_combobox = ttk.Combobox(self.sidebar, textvariable=self.topology_var, state="readonly")
+        self.topology_combobox["values"] = tuple(GENERATION_TOPOLOGIES)
+        self.topology_combobox.current(0)
+        self.topology_combobox.pack(fill="x", pady=5)
 
         # Seed Entry
         ttk.Label(self.sidebar, text="Seed (optional):").pack(anchor="w", pady=(10, 0))
@@ -340,6 +347,7 @@ class Render:
             dead_ends = int(self.dead_ends_scale.get())
             branching_factor = int(self.branching_factor_scale.get())
             generation_algorithm = self.gen_algorithm_var.get()
+            topology = self.topology_var.get()
             connectedness = int(self.connectedness_scale.get()) * 10  # Convert the scale to percentage (e.g., 7 => 70%)
             seed_input = self.seed_entry.get()
             if seed_input == "":
@@ -390,6 +398,7 @@ class Render:
                 "branching_factor": branching_factor,
                 "connectedness": connectedness,
                 "generation_algorithm": generation_algorithm,
+                "topology": topology,
                 "seed": seed,
             }
         except ValueError:

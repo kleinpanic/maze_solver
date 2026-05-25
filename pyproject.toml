@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maze-solver"
-version = "0.2.18"
+version = "0.2.19"
 description = "Maze generation and pathfinding visualizer with GUI, TUI, and WebUI interfaces."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -28,17 +28,22 @@ dev = [
 ]
 
 [project.scripts]
-maze-solver-tui = "maze_solver.tui:main"
-maze-solver-web = "maze_solver.web_server:main"
+maze_solver = "maze_solver.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["maze_solver*"]
 
 [tool.setuptools.package-data]
-maze_solver = ["algorithm_catalog.json", "known_2d_backlog.json"]
+maze_solver = [
+    "algorithm_catalog.json",
+    "known_2d_backlog.json",
+    "web/dist/*",
+    "web/dist/assets/*",
+]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["src/tests"]
 addopts = "-q"
 
 [tool.ruff]

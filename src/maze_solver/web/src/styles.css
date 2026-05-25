@@ -314,7 +314,7 @@ button.primary {
 
 .stage {
   align-self: start;
-  min-height: 1184px;
+  min-height: 1254px;
   display: grid;
   align-content: start;
   justify-items: center;
@@ -330,7 +330,7 @@ button.primary {
 }
 
 .inspector {
-  min-height: 1184px;
+  min-height: 1254px;
 }
 
 canvas {

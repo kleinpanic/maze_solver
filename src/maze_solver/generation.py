@@ -22,6 +22,12 @@ from maze_solver.grid import (
 
 MazeBuilder = Callable[[int, int, random.Random], np.ndarray]
 DEFAULT_TEXTURE_DENSITY = 0.55
+PERFECT_TOPOLOGY = "perfect"
+BRAIDED_TOPOLOGY = "braided"
+GENERATION_TOPOLOGIES = {
+    PERFECT_TOPOLOGY: "Perfect: one route between any two carved cells",
+    BRAIDED_TOPOLOGY: "Braided: extra connector loops without random passage closures",
+}
 
 
 @dataclass(frozen=True)
@@ -135,6 +141,7 @@ def generate_maze(
     dead_ends: int = 10,
     branching_factor: int = 3,
     connectedness: int = 70,
+    topology: str = PERFECT_TOPOLOGY,
 ) -> tuple[np.ndarray, int]:
     rows, cols = normalize_dimensions(rows, cols)
     used_seed = seed if seed is not None else random.randint(0, 999_999)
@@ -142,10 +149,14 @@ def generate_maze(
     builder = _builders().get(generation_algorithm)
     if builder is None:
         raise ValueError(f"Unknown generation algorithm: {generation_algorithm}")
+    if topology not in GENERATION_TOPOLOGIES:
+        raise ValueError(f"Unknown generation topology: {topology}")
 
     for _ in range(100):
         maze = builder(rows, cols, rng)
-        _apply_loops_and_noise(maze, rng, wall_density, dead_ends, branching_factor, connectedness)
+        if topology == BRAIDED_TOPOLOGY:
+            _apply_braiding(maze, rng, wall_density, dead_ends, branching_factor, connectedness)
+        _soften_solid_wall_blocks(maze, rng)
         open_endpoints(maze)
         _connect_open_components(maze, rng)
         if _all_passages_reachable_from_start(maze) and is_solvable(maze, default_start(), default_goal(maze)):
@@ -461,7 +472,7 @@ def _carve_path(maze: np.ndarray, path: list[Cell]) -> None:
         maze[wall] = PASSAGE
 
 
-def _apply_loops_and_noise(
+def _apply_braiding(
     maze: np.ndarray,
     rng: random.Random,
     wall_density: float,
@@ -472,27 +483,78 @@ def _apply_loops_and_noise(
     protected = {default_start(), default_goal(maze)}
     density = max(0.0, min(wall_density, 1.0))
     openness = max(0, min(100, connectedness)) / 100
-    interior_walls = [
+    connectors = [
         (row, col)
         for row in range(1, maze.shape[0] - 1)
         for col in range(1, maze.shape[1] - 1)
-        if maze[row, col] == WALL and (row, col) not in protected
+        if maze[row, col] == WALL and (row, col) not in protected and _is_connector_wall(maze, (row, col))
     ]
-    rng.shuffle(interior_walls)
-    extra_openings = int(branching_factor * openness + (1.0 - density) * len(interior_walls) * 0.14)
-    for cell in interior_walls[:extra_openings]:
+    rng.shuffle(connectors)
+    opening_budget = int(branching_factor * openness + (1.0 - density) * len(connectors) * 0.12)
+    for cell in connectors:
+        if opening_budget <= 0:
+            break
         maze[cell] = PASSAGE
+        if _has_open_2x2(maze, cell):
+            maze[cell] = WALL
+            continue
+        opening_budget -= 1
 
-    passage_cells = [
+
+def _is_connector_wall(maze: np.ndarray, cell: Cell) -> bool:
+    row, col = cell
+    horizontal = maze[row, col - 1] == PASSAGE and maze[row, col + 1] == PASSAGE
+    vertical = maze[row - 1, col] == PASSAGE and maze[row + 1, col] == PASSAGE
+    return horizontal ^ vertical
+
+
+def _has_open_2x2(maze: np.ndarray, cell: Cell) -> bool:
+    row, col = cell
+    for top in (row - 1, row):
+        for left in (col - 1, col):
+            if top < 0 or left < 0 or top + 1 >= maze.shape[0] or left + 1 >= maze.shape[1]:
+                continue
+            if np.all(maze[top : top + 2, left : left + 2] == PASSAGE):
+                return True
+    return False
+
+
+def _open_neighbor_count(maze: np.ndarray, cell: Cell) -> int:
+    row, col = cell
+    return sum(
+        maze[next_row, next_col] == PASSAGE
+        for next_row, next_col in ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1))
+        if 0 <= next_row < maze.shape[0] and 0 <= next_col < maze.shape[1]
+    )
+
+
+def _has_solid_wall_2x2(maze: np.ndarray, cell: Cell) -> bool:
+    row, col = cell
+    for top in (row - 1, row):
+        for left in (col - 1, col):
+            if top <= 0 or left <= 0 or top + 1 >= maze.shape[0] - 1 or left + 1 >= maze.shape[1] - 1:
+                continue
+            if np.all(maze[top : top + 2, left : left + 2] == WALL):
+                return True
+    return False
+
+
+def _soften_solid_wall_blocks(maze: np.ndarray, rng: random.Random) -> None:
+    candidates = [
         (row, col)
         for row in range(1, maze.shape[0] - 1)
         for col in range(1, maze.shape[1] - 1)
-        if maze[row, col] == PASSAGE and (row, col) not in protected
+        if maze[row, col] == WALL
+        and _open_neighbor_count(maze, (row, col)) == 1
+        and _has_solid_wall_2x2(maze, (row, col))
     ]
-    rng.shuffle(passage_cells)
-    closing_budget = min(len(passage_cells), max(0, dead_ends // 2) + int(density * len(passage_cells) * 0.16))
-    for cell in passage_cells[:closing_budget]:
-        maze[cell] = WALL
+    rng.shuffle(candidates)
+    for cell in candidates:
+        if maze[cell] != WALL or _open_neighbor_count(maze, cell) != 1 or not _has_solid_wall_2x2(maze, cell):
+            continue
+        maze[cell] = PASSAGE
+        if _has_open_2x2(maze, cell):
+            maze[cell] = WALL
 
 
 def _reachable_passages(maze: np.ndarray, start: Cell) -> set[Cell]:

@@ -49,11 +49,11 @@ def test_tui_main_prints_metadata_legend_and_stats(capsys):
     )
 
     output = capsys.readouterr().out
-    assert "Maze Solver TUI | Eller | A* | seed 2026" in output
+    assert "Maze Solver TUI | Eller | perfect | A* | seed 2026" in output
     assert "A* Search | Heuristic shortest path | time=O(E log V) with a binary heap" in output
     assert "Legend: S=start G=goal *=path +=frontier .=visited" in output
-    assert "path=27 visited=34 frontier=40 steps=34" in output
-    assert "wall_ratio=56.3%" in output
+    assert "path=39 visited=43 frontier=48 steps=43" in output
+    assert "wall_ratio=57.1%" in output
     assert "\033[" not in output
 
 

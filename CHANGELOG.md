@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.19
+
+- Reorganized the project into a package-first layout: GUI, TUI, WebUI, server,
+  and algorithm code now live under `src/maze_solver`, with Python tests under
+  `src/tests`.
+- Added the single `maze_solver` CLI with `gui`, `tui`, `web`, and `catalog`
+  subcommands plus a root Makefile for install, test, WebUI build, and run
+  workflows.
+- Added perfect-vs-braided maze topology controls across GUI, TUI, and WebUI.
+  Perfect topology keeps one route through spanning-tree mazes, while braided
+  topology adds connector loops without random passage closures.
+- Replaced random post-generation cell closing with topology-aware connector
+  carving and solid-wall softening that avoids accidental 2x2 open blocks.
+
 ## 0.2.18
 
 - Matched the right inspector rail height to the left controls and center stage

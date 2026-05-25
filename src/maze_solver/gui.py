@@ -1,18 +1,13 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
-
 import logging
 import threading
 import time
 import tkinter as tk
 from tkinter import messagebox
 
-from maze_generator import generate_maze
+from maze_solver.algorithms import SOLVER_REGISTRY
+from maze_solver.generation import generate_maze
+from maze_solver.render import Render
 from maze_solver.stats import complexity_score, format_complexity_score, maze_statistics
-from pathfinding_algorithms import SOLVER_REGISTRY
-from render import Render
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +115,7 @@ class MazeSolverApp:
                 dead_ends=dead_ends,
                 branching_factor=branching_factor,
                 connectedness=connectedness,
+                topology=params["topology"],
             )
 
             self.maze = maze
@@ -273,7 +269,7 @@ class MazeSolverApp:
         self.request_stop_solver(show_message=True)
 
 
-if __name__ == "__main__":
+def main() -> None:
     root = tk.Tk()
     root.title("Maze Solver")
     app = MazeSolverApp(root)
@@ -283,3 +279,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt detected. Exiting the application cleanly...")
         app.quit_application()  # Call the quit method to clean up
+
+
+if __name__ == "__main__":
+    main()

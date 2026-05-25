@@ -1,6 +1,7 @@
 import { solveHadlockEvents } from "./hadlock.js";
 import { connectOpenComponents, isFullyConnected } from "./mazeConnectivity.js";
 import { mazeStatistics } from "./mazeStats.js";
+import { applyBraidedTopology, softenSolidWallBlocks } from "./mazeTopology.js";
 
 const WALL = 1;
 const OPEN = 0;
@@ -645,6 +646,7 @@ function syncCanvasGeometry(maze) {
 }
 const controls = {
   generator: document.querySelector("#generator"),
+  topology: document.querySelector("#topology"),
   rows: document.querySelector("#rows"),
   cols: document.querySelector("#cols"),
   seed: document.querySelector("#seed"),
@@ -1085,30 +1087,6 @@ function generateRecursiveDivision(rows, cols, random) {
   return maze;
 }
 
-function applyTextureProfile(maze, density, random) {
-  const rows = maze.length;
-  const cols = maze[0].length;
-  const protectedCells = new Set([key([1, 1]), key([rows - 2, cols - 2])]);
-  const clampedDensity = Math.max(0, Math.min(1, density));
-  const interiorWalls = [];
-  const passages = [];
-  for (let r = 1; r < rows - 1; r += 1) {
-    for (let c = 1; c < cols - 1; c += 1) {
-      if (protectedCells.has(key([r, c]))) continue;
-      if (maze[r][c] === WALL) interiorWalls.push([r, c]);
-      else passages.push([r, c]);
-    }
-  }
-
-  shuffle(interiorWalls, random);
-  const loopBudget = Math.floor((1 - clampedDensity) * interiorWalls.length * 0.14);
-  for (const [r, c] of interiorWalls.slice(0, loopBudget)) maze[r][c] = OPEN;
-
-  shuffle(passages, random);
-  const closeBudget = Math.floor(clampedDensity * passages.length * 0.16);
-  for (const [r, c] of passages.slice(0, closeBudget)) maze[r][c] = WALL;
-}
-
 function generateMaze(options = {}) {
   clearInterval(state.timer);
   const rows = odd(controls.rows.value, Number(controls.rows.max) || 81);
@@ -1118,6 +1096,7 @@ function generateMaze(options = {}) {
   const shouldRandomize = options.randomizeSeed || controls.seed.value === "" || controls.seed.value === String(state.autoSeed);
   const baseSeed = shouldRandomize ? Math.floor(Math.random() * 1_000_000_000) : Number(controls.seed.value);
   const generator = controls.generator.value;
+  const topology = controls.topology.value;
   const generators = {
     "Recursive Backtracker": generateRecursive,
     "Prim's": generatePrim,
@@ -1137,7 +1116,8 @@ function generateMaze(options = {}) {
     usedSeed = baseSeed + attempt;
     const random = rng(usedSeed);
     const candidate = generators[generator](rows, cols, random);
-    applyTextureProfile(candidate, DEFAULT_TEXTURE_DENSITY, random);
+    if (topology === "braided") applyBraidedTopology(candidate, DEFAULT_TEXTURE_DENSITY, random);
+    softenSolidWallBlocks(candidate, random);
     candidate[1][1] = OPEN;
     candidate[rows - 2][cols - 2] = OPEN;
     connectOpenComponents(candidate, random);

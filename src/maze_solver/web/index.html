@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maze Solver Museum</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=0.2.18" />
+    <link rel="stylesheet" href="./styles.css?v=0.2.19" />
   </head>
   <body>
     <div class="app-shell">
@@ -37,6 +37,13 @@
               <option>Sidewinder</option>
               <option>Eller</option>
               <option>Recursive Division</option>
+            </select>
+          </label>
+          <label>
+            Topology
+            <select id="topology">
+              <option value="perfect" selected>Perfect: one correct path</option>
+              <option value="braided">Braided: extra loops</option>
             </select>
           </label>
 
@@ -285,6 +292,6 @@ trace parents from goal</pre>
         </section>
       </main>
     </div>
-    <script type="module" src="./main.js?v=0.2.18"></script>
+    <script type="module" src="./main.js?v=0.2.19"></script>
   </body>
 </html>

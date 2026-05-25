@@ -38,6 +38,7 @@ def main(argv: list[str] | None = None) -> None:
         dead_ends=args.dead_ends,
         branching_factor=args.branching_factor,
         connectedness=args.connectedness,
+        topology=args.topology,
     )
     start = default_start()
     goal = default_goal(maze)
@@ -53,7 +54,7 @@ def main(argv: list[str] | None = None) -> None:
     score = format_complexity_score(complexity_score(info, maze_stats, max(1, len(path))))
     implemented, known_total, _backlog = known_2d_coverage_summary()
 
-    print(f"Maze Solver TUI | {args.generator} | {args.algorithm} | seed {seed}")
+    print(f"Maze Solver TUI | {args.generator} | {args.topology} | {args.algorithm} | seed {seed}")
     print(
         f"{info.name} | {info.family} | time={info.time_complexity} | "
         f"space={info.space_complexity} | optimal={info.optimal} | complete={info.complete}"
@@ -84,6 +85,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dead-ends", type=int, default=6)
     parser.add_argument("--branching-factor", type=int, default=5)
     parser.add_argument("--connectedness", type=int, default=75)
+    parser.add_argument("--topology", choices=("perfect", "braided"), default="perfect")
     parser.add_argument("--generator", choices=tuple(GENERATION_REGISTRY), default="Recursive Backtracker")
     parser.add_argument("--algorithm", choices=tuple(ALGORITHM_REGISTRY), default="BFS")
     parser.add_argument("--color", choices=("auto", "always", "never"), default="auto")
