@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.20
+
+- Added GitHub Wiki source under `docs/wiki` with architecture, algorithm,
+  backlog, and operations pages.
+- Added a wiki publishing workflow that mirrors `docs/wiki` into the
+  repository wiki.
+- Added issue-to-backlog correlation automation for GitHub issues, including
+  area labels, implemented-catalog labels, known-2D backlog labels, and a local
+  `make backlog-correlate` target.
+
 ## 0.2.19
 
 - Reorganized the project into a package-first layout: GUI, TUI, WebUI, server,

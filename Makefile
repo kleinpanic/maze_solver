@@ -1,7 +1,7 @@
 PYTHON ?= $(shell if [ -x .venv/bin/python ]; then echo .venv/bin/python; else echo python3; fi)
 WEB_DIR := src/maze_solver/web
 
-.PHONY: install dev format lint test test-python test-web web-build web-smoke run gui tui web catalog clean
+.PHONY: install dev format lint test test-python test-web web-build web-smoke run gui tui web catalog backlog-correlate backlog-correlate-apply clean
 
 install:
 	$(PYTHON) -m pip install -e .
@@ -42,6 +42,12 @@ web:
 
 catalog:
 	$(PYTHON) -m maze_solver.cli catalog
+
+backlog-correlate:
+	$(PYTHON) -m maze_solver.automation.correlate_issues --summary
+
+backlog-correlate-apply:
+	$(PYTHON) -m maze_solver.automation.correlate_issues --apply --summary
 
 clean:
 	rm -rf build dist *.egg-info src/*.egg-info .pytest_cache .ruff_cache

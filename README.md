@@ -3,6 +3,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/kleinpanic/maze_solver/ci.yml?branch=main&label=CI)](https://github.com/kleinpanic/maze_solver/actions/workflows/ci.yml)
 [![Pages](https://img.shields.io/github/actions/workflow/status/kleinpanic/maze_solver/pages.yml?branch=main&label=Pages)](https://github.com/kleinpanic/maze_solver/actions/workflows/pages.yml)
 [![Security](https://img.shields.io/github/actions/workflow/status/kleinpanic/maze_solver/security.yml?branch=main&label=Security)](https://github.com/kleinpanic/maze_solver/actions/workflows/security.yml)
+[![Wiki](https://img.shields.io/github/actions/workflow/status/kleinpanic/maze_solver/wiki.yml?branch=main&label=Wiki)](https://github.com/kleinpanic/maze_solver/actions/workflows/wiki.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg)](pyproject.toml)
 
@@ -25,6 +26,7 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 - CI for Python 3.11, 3.12, and 3.13.
 - GitHub Pages deployment from `src/maze_solver/web/dist`.
 - Automated tagged releases for `v*` tags, including Python distributions and a zipped WebUI build.
+- GitHub Wiki publishing from `docs/wiki` and issue-to-backlog correlation labels.
 - CodeQL, dependency review, and Dependabot configuration.
 
 ## Solver Catalog
@@ -104,6 +106,12 @@ make test-web
 make web-build
 ```
 
+Preview open GitHub issue correlation against the implemented catalog and researched backlog:
+
+```bash
+make backlog-correlate
+```
+
 Create a release:
 
 ```bash
@@ -120,6 +128,7 @@ src/maze_solver/          Python package, GUI, TUI, server, and algorithm core
 src/maze_solver/web/      Static Canvas WebUI
 src/tests/                Python tests for solvers and generators
 docs/ALGORITHMS.md        Algorithm catalog and references
+docs/wiki/                GitHub Wiki source
 .github/workflows/        CI, Pages, release, and security workflows
 ```
 
