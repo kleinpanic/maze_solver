@@ -10,7 +10,7 @@
     "test:e2e": "npm run build && node tests/webuiSmoke.mjs"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.1.0",
+    "@tailwindcss/cli": "^4.3.2",
     "playwright": "^1.60.0",
     "tailwindcss": "^4.1.0"
   }
