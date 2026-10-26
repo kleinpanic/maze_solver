@@ -76,3 +76,14 @@ def test_tui_module_execution_prints_catalog():
 
     assert "Maze Solver Algorithm Catalog" in result.stdout
     assert "Hadlock" in result.stdout
+
+
+def test_tui_rejects_too_small_dimensions_with_usage_error(capsys):
+    for argv in (["--rows", "1"], ["--cols", "-5"]):
+        try:
+            tui.parse_args(argv)
+        except SystemExit as exit_error:
+            assert exit_error.code == 2
+        else:
+            raise AssertionError(f"{argv} should be rejected")
+        assert "maze dimensions must be at least 3" in capsys.readouterr().err
