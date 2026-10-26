@@ -23,11 +23,11 @@ The project treats mazes as grid graphs, where open cells are vertices and north
 - Browser-side educational WebUI with Canvas animation, researched complexity notes, calculated per-maze graph bounds, runtime metrics, per-solver math breakdowns, generator theory, maze-structure statistics, and 85 runnable renditions against a 128-algorithm known-applicable 2D coverage counter.
 - Desktop GUI with algorithm metadata, restart-on-selection solving, runtime controls, graph telemetry, calculated bound estimates, and high-contrast visualization states.
 - Terminal UI with reproducible runs, optional ANSI color, calculated graph/work statistics, and a `--catalog` view for the full roadmap.
-- CI for Python 3.11, 3.12, and 3.13.
+- CI for Python 3.11, 3.12, and 3.13, plus WebUI dependency audit, unit tests, build, and browser smoke test.
 - GitHub Pages deployment from `src/maze_solver/web/dist`.
 - Automated tagged releases for `v*` tags, including Python distributions and a zipped WebUI build.
 - GitHub Wiki publishing from `docs/wiki` and issue-to-backlog correlation labels.
-- CodeQL, dependency review, and Dependabot configuration.
+- CodeQL and dependency review.
 
 ## Solver Catalog
 
@@ -64,6 +64,9 @@ See [docs/ALGORITHMS.md](docs/ALGORITHMS.md) for the full catalog, complexity no
 The machine-readable implementation catalog is tracked in [src/maze_solver/algorithm_catalog.json](src/maze_solver/algorithm_catalog.json). The coverage counter combines those 85 implemented maze, grid, routing, robotics, sampling, optimization, and constraint-solving renditions with the researched backlog in [src/maze_solver/known_2d_backlog.json](src/maze_solver/known_2d_backlog.json), currently 85 of 128 known-applicable 2D algorithms covered.
 
 ## Quick Start
+
+Requirements: Python 3.11+, Node.js 20+ with npm (for the WebUI and `make dev`), and Tkinter for the desktop GUI only
+(on Debian/Ubuntu: `sudo apt install python3-tk`). The `tui`, `web`, and `catalog` commands work without Tkinter.
 
 ```bash
 python3 -m venv .venv
@@ -104,6 +107,12 @@ Run WebUI checks:
 ```bash
 make test-web
 make web-build
+```
+
+Run the browser smoke test (builds first; needs Playwright's Chromium once via `npx --prefix src/maze_solver/web playwright install chromium`):
+
+```bash
+make web-smoke
 ```
 
 Preview open GitHub issue correlation against the implemented catalog and researched backlog:
