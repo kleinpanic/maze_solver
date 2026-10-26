@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import argparse
 
-from maze_solver import gui, tui, web_server
-
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="maze_solver", description="Maze Solver command line entrypoint.")
@@ -21,13 +19,22 @@ def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     command = args.command or "gui"
 
+    # Import interfaces lazily so the TUI and web commands work without Tkinter installed.
     if command == "gui":
+        from maze_solver import gui
+
         gui.main()
     elif command == "tui":
+        from maze_solver import tui
+
         tui.main(_clean_remainder(args.args))
     elif command == "web":
+        from maze_solver import web_server
+
         web_server.main(_clean_remainder(args.args))
     elif command == "catalog":
+        from maze_solver import tui
+
         tui.main(["--catalog", *_clean_remainder(args.args)])
     else:
         raise SystemExit(f"Unknown command: {command}")
