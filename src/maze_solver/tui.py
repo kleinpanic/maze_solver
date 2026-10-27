@@ -77,10 +77,17 @@ def main(argv: list[str] | None = None) -> None:
     )
 
 
+def maze_dimension(value: str) -> int:
+    size = int(value)
+    if size < 3:
+        raise argparse.ArgumentTypeError("maze dimensions must be at least 3")
+    return size
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run maze generation and solving in the terminal.")
-    parser.add_argument("--rows", type=int, default=21)
-    parser.add_argument("--cols", type=int, default=41)
+    parser.add_argument("--rows", type=maze_dimension, default=21)
+    parser.add_argument("--cols", type=maze_dimension, default=41)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--dead-ends", type=int, default=6)
     parser.add_argument("--branching-factor", type=int, default=5)
